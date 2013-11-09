@@ -1,32 +1,30 @@
-<!-- 
-  Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights Reserved
-  http://www.griddynamics.com
-
-  For information about the licensing and copyright of this document please
-  contact Grid Dynamics at info@griddynamics.com.
-
-  $Id: $
-  @Project:     Spring Nested
-  @Description: 
- -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.griddynamics.banshun</groupId>
-        <artifactId>banshun-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <groupId>cz.jirutka.spring.modular</groupId>
+        <artifactId>spring-modular-parent</artifactId>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>banshun-web</artifactId>
-    <name>${project.groupId}:${project.artifactId}</name>
+
+    <!--//////////////////// ABOUT ////////////////////-->
+
+    <artifactId>spring-modular-web</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Spring Modular Web</name>
+
+
+    <!--//////////////////// DEPENDENCIES ////////////////////-->
 
     <dependencies>
         <dependency>
-            <groupId>com.griddynamics.banshun</groupId>
-            <artifactId>banshun-core</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>spring-modular-core</artifactId>
         </dependency>
 
         <dependency>

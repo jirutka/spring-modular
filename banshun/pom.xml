@@ -1,69 +1,84 @@
-<!-- 
-  Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights Reserved
-  http://www.griddynamics.com
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  For information about the licensing and copyright of this document please
-  contact Grid Dynamics at info@griddynamics.com.
-
-  $Id: $
-  @Project:     Spring Nested
-  @Description: 
- -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.griddynamics.banshun</groupId>
-    <artifactId>banshun-parent</artifactId>
-    <name>${project.groupId}:${project.artifactId}</name>
-    <version>1.0.0-SNAPSHOT</version>
+    <parent>
+        <groupId>cz.jirutka.maven</groupId>
+        <artifactId>root-parent</artifactId>
+        <version>1.0</version>
+    </parent>
+
+
+    <!--//////////////////// ABOUT ////////////////////-->
+
+    <groupId>cz.jirutka.spring.modular</groupId>
+    <artifactId>spring-modular-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <description>allows to build isolated children contexts and import export some beans explicitly</description>
-    <url>http://blog.griddynamics.com/2011/04/spring-nested-part-i-why.html</url>
+    <name>Spring Modular</name>
+    <url>http://github.com/jirutka/spring-modular</url>
+    <inceptionYear>2013</inceptionYear>
 
-    <properties>
-        <spring.version>3.0.5.RELEASE</spring.version>
-        <slf4j.version>1.5.11</slf4j.version>
-        <servletApi.version>2.5</servletApi.version>
-        <junit.version>4.7</junit.version>
-        <jettyServletTester.version>6.1.16</jettyServletTester.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <description>
+        Modularize Spring applications with enhanced hierarchical contexts model.
+        This project is fork of the Banshun project from Grid Dynamics.
+    </description>
+
+    <developers>
+        <developer>
+            <name>Jakub Jirutka</name>
+            <email>jakub@jirutka.cz</email>
+            <organization>CTU in Prague</organization>
+            <organizationUrl>http://www.cvut.cz</organizationUrl>
+        </developer>
+    </developers>
+
+
+    <!--//////////////////// DISTRIBUTION ////////////////////-->
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>http://github.com/jirutka/spring-modular</url>
+        <connection>scm:git:git@github.com:jirutka/spring-modular.git</connection>
+    </scm>
+
+    <ciManagement>
+        <system>Travis</system>
+        <url>https://travis-ci.org/jirutka/spring-modular</url>
+    </ciManagement>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>http://github.com/jirutka/spring-modular</url>
+    </issueManagement>
+
+
+    <!--//////////////////// MODULES ////////////////////-->
 
     <modules>
         <module>core</module>
         <module>web</module>
     </modules>
 
-    <scm>
-        <url>https://github.com/griddynamics/banshun</url>
-        <connection>scm:git:git://banshun/griddynamics/banshun.git</connection>
-        <developerConnection>scm:git:git@banshun:griddynamics/banshun.git</developerConnection>
-    </scm>
 
-    <issueManagement>
-        <url>https://github.com/griddynamics/banshun/issues</url>
-        <system>GitHub Issues</system>
-    </issueManagement>
+    <!--//////////////////// PROPERTIES ////////////////////-->
+
+    <properties>
+        <spring.version>3.0.5.RELEASE</spring.version>
+        <slf4j.version>1.5.11</slf4j.version>
+    </properties>
 
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>gd-nexus-snapshots</id>
-            <name>gd-nexus-snapshots</name>
-            <url>https://nexus.griddynamics.net/nexus/content/repositories/banshun-snapshots/</url>
-            <layout>default</layout>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
-
-        <repository>
-            <id>gd-nexus-releases</id>
-            <name>gd-nexus-releases</name>
-            <url>https://nexus.griddynamics.net/nexus/content/repositories/banshun-releases/</url>
-            <layout>default</layout>
-        </repository>
-    </distributionManagement>
+    <!--//////////////////// DEPENDENCIES ////////////////////-->
 
     <dependencies>
         <dependency>
@@ -92,13 +107,6 @@
 
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
             <version>${slf4j.version}</version>
             <scope>provided</scope>
@@ -114,7 +122,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <version>4.7</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -123,7 +131,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>banshun-core</artifactId>
+                <artifactId>spring-modular-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -154,53 +162,17 @@
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>servlet-api</artifactId>
-                <version>${servletApi.version}</version>
+                <version>2.5</version>
                 <scope>provided</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>jetty-servlet-tester</artifactId>
-                <version>${jettyServletTester.version}</version>
+                <version>6.1.16</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.3</version>
-            </plugin>
-
-            <plugin>
-                <groupId>com.github.github</groupId>
-                <artifactId>downloads-maven-plugin</artifactId>
-                <version>0.5</version>
-                <configuration>
-                    <description>${project.name} build of the ${project.version} release</description>
-                    <server>github</server>
-                    <override>true</override>
-                    <includeAttached>true</includeAttached>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.2.2</version>
-            </plugin>
-        </plugins>
-    </build>
 </project>
