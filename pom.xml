@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>cz.jirutka.maven</groupId>
-        <artifactId>root-parent</artifactId>
+        <artifactId>groovy-lombok-parent</artifactId>
         <version>1.0</version>
     </parent>
 
@@ -74,6 +74,7 @@
 
     <properties>
         <spring.version>3.2.5.RELEASE</spring.version>
+        <spock.version>0.7-groovy-2.0</spock.version>
     </properties>
 
 
@@ -111,6 +112,8 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--//// Test ////-->
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -122,6 +125,50 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.7</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>${groovy.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <version>${spock.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-spring</artifactId>
+            <version>${spock.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Required by spock-core for mocking classes. -->
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+            <version>2.2.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Required by spock-core for mocking classes without default constructor. -->
+        <dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>2.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
