@@ -2,6 +2,8 @@
  * Copyright 2012 Grid Dynamics Consulting Services, Inc.
  *      http://www.griddynamics.com
  *
+ * Copyright 2013 Jakub Jirutka <jakub@jirutka.cz>.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,27 +21,24 @@ package com.griddynamics.banshun.xml;
 import com.griddynamics.banshun.ExportRef;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.ObjectUtils;
 import org.w3c.dom.Element;
 
 import static com.griddynamics.banshun.xml.ParserUtils.*;
+import static com.griddynamics.banshun.ContextParentBean.EXPORT_REF_SUFFIX;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
 
 public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
-
-    /**
-     * String to be appended to the exported bean name.
-     */
-    private static final String BEAN_NAME_SUFFIX = "-export-ref";
-
 
     @Override
     protected String getBeanClassName(Element element) {
@@ -78,7 +77,7 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
             exportName = exportBeanRef;
         }
 
-        String exportRefName = exportName + BEAN_NAME_SUFFIX;
+        String exportRefName = exportName + EXPORT_REF_SUFFIX;
         if (registry.containsBeanDefinition(exportRefName)) {
             throw new BeanCreationException("Registry already contains bean with name: " + exportRefName);
         }
@@ -90,20 +89,19 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
                 exportBeanRef,
                 parserContext.getReaderContext().getResource().getDescription()
         ));
-
-        AbstractBeanDefinition exportBeanDef = rootBeanDefinition(ExportRef.class).getRawBeanDefinition();
-        exportBeanDef.setConstructorArgumentValues(exportBeanConstructorArgValues);
+        BeanDefinition exportBeanDef = new RootBeanDefinition(ExportRef.class, exportBeanConstructorArgValues, null);
 
         ConstructorArgumentValues voidBeanConstructorArgValues = new ConstructorArgumentValues();
         voidBeanConstructorArgValues.addGenericArgumentValue(exportBeanDef, ExportRef.class.getName());
 
-        AbstractBeanDefinition voidBeanDef = rootBeanDefinition(Void.class).getRawBeanDefinition();
+        AbstractBeanDefinition voidBeanDef = rootBeanDefinition(Void.class)
+                .setFactoryMethod("export")
+                .setScope(SCOPE_SINGLETON)
+                .setLazyInit(false)
+                //.addDependsOn(exportBeanRef) TODO ?
+                .getRawBeanDefinition();
         voidBeanDef.setFactoryBeanName(rootName);
-        voidBeanDef.setFactoryMethodName("export");
-        voidBeanDef.setLazyInit(false);
-        voidBeanDef.setScope(SCOPE_SINGLETON);
         voidBeanDef.setConstructorArgumentValues(voidBeanConstructorArgValues);
-//        voidBeanDefinition.setDependsOn(new String[] { exportBeanRef }); TODO ?
 
         registry.registerBeanDefinition(exportRefName, voidBeanDef);
     }
