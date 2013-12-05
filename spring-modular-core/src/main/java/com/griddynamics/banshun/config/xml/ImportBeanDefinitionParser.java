@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.griddynamics.banshun.xml;
+package com.griddynamics.banshun.config.xml;
 
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -23,7 +23,7 @@ import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
-import static com.griddynamics.banshun.xml.ParserUtils.*;
+import static com.griddynamics.banshun.config.xml.ParserUtils.*;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 
 
@@ -31,32 +31,32 @@ public class ImportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
 
     @Override
     protected String getBeanClassName(Element element) {
-        return element.getAttribute(INTERFACE_ATTR);
+        return element.getAttribute(ParserUtils.INTERFACE_ATTR);
     }
 
     @Override
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-        String exportInterface = element.getAttribute(INTERFACE_ATTR);
-        if (isBlank(exportInterface)) {
+        String exportInterface = element.getAttribute(ParserUtils.INTERFACE_ATTR);
+        if (ParserUtils.isBlank(exportInterface)) {
             return;
         }
 
-        String externalName = element.getAttribute(ID_ATTR);
-        if (isBlank(externalName)) {
+        String externalName = element.getAttribute(ParserUtils.ID_ATTR);
+        if (ParserUtils.isBlank(externalName)) {
             return;
         }
 
-        String rootName = element.getAttribute(ROOT_ATTR);
-        if (isBlank(rootName)) {
-            rootName = DEFAULT_ROOT_FACTORY_NAME;
+        String rootName = element.getAttribute(ParserUtils.ROOT_ATTR);
+        if (ParserUtils.isBlank(rootName)) {
+            rootName = ParserUtils.DEFAULT_ROOT_FACTORY_NAME;
         }
 
         ConstructorArgumentValues constructorArgValues = new ConstructorArgumentValues();
         constructorArgValues.addGenericArgumentValue(externalName);
-        constructorArgValues.addGenericArgumentValue(findClass(
+        constructorArgValues.addGenericArgumentValue(ParserUtils.findClass(
                 exportInterface,
-                element.getAttribute(ID_ATTR),
+                element.getAttribute(ParserUtils.ID_ATTR),
                 parserContext.getReaderContext().getResource().getDescription()
         ));
 

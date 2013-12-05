@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.griddynamics.banshun.xml;
+package com.griddynamics.banshun.config.xml;
 
 import org.springframework.beans.factory.CannotLoadBeanClassException;
 

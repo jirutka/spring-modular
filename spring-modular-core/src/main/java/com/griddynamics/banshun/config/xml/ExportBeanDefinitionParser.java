@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.griddynamics.banshun.xml;
+package com.griddynamics.banshun.config.xml;
 
 import com.griddynamics.banshun.ExportRef;
 import org.springframework.beans.factory.BeanCreationException;
@@ -32,7 +32,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.ObjectUtils;
 import org.w3c.dom.Element;
 
-import static com.griddynamics.banshun.xml.ParserUtils.*;
+import static com.griddynamics.banshun.config.xml.ParserUtils.*;
 import static com.griddynamics.banshun.ContextParentBean.EXPORT_REF_SUFFIX;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
