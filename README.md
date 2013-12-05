@@ -1,28 +1,18 @@
-Banshun
-=======
+Spring Modular
+==============
 
-### What is Banshun?
+The aim of this project is to make [Spring](http://projects.spring.io/spring-framework/)-based applications more modular, but without complexity and problems of OSGi. This solution is very simple, it basically enhances Spring’s context hierarchy model by adding ability to explicitly export and import beans between child contexts (aka modules).
 
-Banshun is modularity for Spring Framework extension which makes spring more modular. 
-Root context nests few children contexts which can interchange by their singletons.
+TODO
 
-### When i need it?
 
-When you have a modular Spring application and you are not happy with 'import' because:
-* Bean name clashes
-* AOP clashes
-* lack of fail isolation
-* dependency loops
-* etc
+Origin
+------
 
-### Where can i read more about it?
+This project is fork of [Banshun](https://github.com/griddynamics/banshun) project from Grid Dynamics. You can read more about its original and still valid purposes and motivation on their blog [here](http://blog.griddynamics.com/2011/04/spring-nested-part-i-why.html).
 
-* [wiki][wiki]
-* [deck][presentation]
-* [blog][gd_nested_blog]
-* [mail group][mailgroup]
 
-[wiki]: https://github.com/griddynamics/banshun/wiki
-[gd_nested_blog]: http://blog.griddynamics.com/search/label/Spring
-[presentation]: https://docs.google.com/presentation/d/15_yZcqMW1qSMpDpihs5-emBnpCaYdIgZHd-Km3lDEh8/pub?start=false&loop=false&delayms=3000
-[mailgroup]: https://groups.google.com/forum/#!forum/banshun
+License
+-------
+
+This project is licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
