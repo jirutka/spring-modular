@@ -65,8 +65,8 @@
     <!--//////////////////// MODULES ////////////////////-->
 
     <modules>
-        <module>core</module>
-        <module>web</module>
+        <module>spring-modular-core</module>
+        <module>spring-modular-web</module>
     </modules>
 
 
