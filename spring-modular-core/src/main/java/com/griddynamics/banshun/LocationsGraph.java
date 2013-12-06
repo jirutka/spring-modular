@@ -20,8 +20,8 @@ import java.util.*;
 
 public class LocationsGraph {
 
-    private Map<String, HashSet<String>> dependOn = new HashMap<String, HashSet<String>>();
-    private Map<String, HashSet<String>> dependenciesOf = new HashMap<String, HashSet<String>>();
+    private Map<String, HashSet<String>> dependOn = new HashMap<>();
+    private Map<String, HashSet<String>> dependenciesOf = new HashMap<>();
 
     public LocationsGraph(Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
         for (String beanName : imports.keySet()) {
@@ -41,8 +41,8 @@ public class LocationsGraph {
     }
 
     public List<String> filterConfigLocations(List<String> limitedLocations, String[] allLocations) {
-        Set<String> marked = new HashSet<String>();
-        List<String> resultLocationList = new ArrayList<String>(Arrays.asList(allLocations));
+        Set<String> marked = new HashSet<>();
+        List<String> resultLocationList = new ArrayList<>(Arrays.asList(allLocations));
 
         if (!limitedLocations.isEmpty()) {
             for (String loc : limitedLocations) {

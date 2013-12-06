@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ExportTargetSource implements TargetSource {
     private static final Logger log = LoggerFactory.getLogger(ExportTargetSource.class);
 
-    private final AtomicReference<Object> target = new AtomicReference<Object>();
+    private final AtomicReference<Object> target = new AtomicReference<>();
     private final String targetBeanName;
     private final Class<?> targetClass;
     private final BeanFactory beanFactory;

@@ -39,16 +39,16 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         ApplicationListener<ApplicationEvent>, ExceptionsLogger {
 
     private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
-    private Map<String, Exception> nestedContextsExceptions = new LinkedHashMap<String, Exception>();
+    private Map<String, Exception> nestedContextsExceptions = new LinkedHashMap<>();
 
     protected ApplicationContext context;
     protected ConfigurableListableBeanFactory beanFactory;
-    private List<ConfigurableApplicationContext> children = new ArrayList<ConfigurableApplicationContext>();
+    private List<ConfigurableApplicationContext> children = new ArrayList<>();
 
     protected String[] configLocations = new String[0];
     protected List<String> resultConfigLocations;
-    protected List<String> excludeConfigLocations = new ArrayList<String>();
-    protected Set<String> ignoredLocations = new HashSet<String>();
+    protected List<String> excludeConfigLocations = new ArrayList<>();
+    protected Set<String> ignoredLocations = new HashSet<>();
 
     private boolean strictErrorHandling = false;
     private String childContextPrototype = null;
@@ -157,7 +157,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
      * Resolves configs paths and build nested children contexts.
      */
     public void afterPropertiesSet() throws Exception {
-        List<String> configLocations = new ArrayList<String>();
+        List<String> configLocations = new ArrayList<>();
         List<String> resolvedConfigLocations = resolveConfigLocations(configLocations);
         List<String> narrowedConfigLocations = excludeConfigLocations(resolvedConfigLocations);
         this.resultConfigLocations = analyzeDependencies(narrowedConfigLocations);
@@ -218,7 +218,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
 
     private List<String> collectConfigLocations(String location) throws IOException {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         Resource[] resources = context.getResources(location);
 
         for (Resource resource : resources) {

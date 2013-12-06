@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 public class LookupTargetSource implements TargetSource {
     private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
 
-    private AtomicReference<Object> target = new AtomicReference<Object>();
+    private AtomicReference<Object> target = new AtomicReference<>();
     private final ApplicationContext context;
 
     private final String targetBeanName;

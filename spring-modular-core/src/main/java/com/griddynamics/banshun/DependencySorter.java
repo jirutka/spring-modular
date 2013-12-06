@@ -32,7 +32,7 @@ public class DependencySorter {
 
     private List<Location> conflictContextGroup = Collections.emptyList();
     private boolean prohibitCycles = true;
-    private List<Location> locations = new LinkedList<Location>();
+    private List<Location> locations = new LinkedList<>();
 
     interface Predicate {
         boolean isValid(Location s);
@@ -92,8 +92,8 @@ public class DependencySorter {
 
 
     private List<Location> prepareLocations(String[] configLocations, Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
-        List<Location> locations = new LinkedList<Location>();
-        Map<String, Location> locationsMap = new HashMap<String, Location>();
+        List<Location> locations = new LinkedList<>();
+        Map<String, Location> locationsMap = new HashMap<>();
 
         for (String locationName : configLocations) {
             Location location = new Location(locationName, new HashSet<BeanReferenceInfo>(), new HashSet<BeanReferenceInfo>());
@@ -112,7 +112,7 @@ public class DependencySorter {
             logGraph.debug("digraph G {");
 
             for (String locationName : locationsMap.keySet()) {
-                Map<String, StringBuilder> exportingLocations = new HashMap<String, StringBuilder>();
+                Map<String, StringBuilder> exportingLocations = new HashMap<>();
 
                 for (BeanReferenceInfo bean : locationsMap.get(locationName).getImportBeans()) {
                     String exportingLocation = exports.get(bean.getBeanName()).getLocation();
@@ -142,7 +142,7 @@ public class DependencySorter {
     }
 
     private Set<String> fillLocationImportVectors(Map<String, Location> locations, Map<String, List<BeanReferenceInfo>> importedBeans) {
-        Set<String> allImportBeans = new HashSet<String>();
+        Set<String> allImportBeans = new HashSet<>();
 
         for (String beanName : importedBeans.keySet()) {
             List<BeanReferenceInfo> beans = importedBeans.get(beanName);
@@ -157,7 +157,7 @@ public class DependencySorter {
     }
 
     private List<Location> sortLocations() {
-        LinkedList<Location> list = new LinkedList<Location>(locations);
+        LinkedList<Location> list = new LinkedList<>(locations);
         List<Location> orderedHead = pullLocationListHead(list);
 
         if (list.isEmpty()) {
@@ -184,9 +184,9 @@ public class DependencySorter {
     }
 
     private List<Location> pullLocationListTail(LinkedList<Location> list) {
-        LinkedList<Location> tail = new LinkedList<Location>();
+        LinkedList<Location> tail = new LinkedList<>();
 
-        final LinkedList<String> annihilatedExports = new LinkedList<String>();
+        final LinkedList<String> annihilatedExports = new LinkedList<>();
         Predicate hasNoDependencies = new Predicate() {
             public boolean isValid(Location s) {
                 return s.getExportBeans().isEmpty() || annihilatedExports.containsAll(collectBeanNames(s.getExportBeans()));
@@ -209,14 +209,14 @@ public class DependencySorter {
     }
 
     private List<Location> pullLocationListHead(LinkedList<Location> list) {
-        final Set<String> definedBeans = new LinkedHashSet<String>();
+        final Set<String> definedBeans = new LinkedHashSet<>();
         Predicate canBeFired = new Predicate() {
             public boolean isValid(Location location) {
                 return definedBeans.containsAll(collectBeanNames(location.getImportBeans()));
             }
         };
         Location location;
-        LinkedList<Location> orderedHead = new LinkedList<Location>();
+        LinkedList<Location> orderedHead = new LinkedList<>();
 
         while (!list.isEmpty() && (location = removeLocation(list, canBeFired)) != null) {
             definedBeans.addAll(collectBeanNames(location.getExportBeans()));
@@ -270,7 +270,7 @@ public class DependencySorter {
     }
 
     Collection<String> collectBeanNames(Collection<BeanReferenceInfo> beanInfoCollection) {
-        Set<String> set = new LinkedHashSet<String>();
+        Set<String> set = new LinkedHashSet<>();
         for (BeanReferenceInfo beanReferenceInfo : beanInfoCollection) {
             set.add(beanReferenceInfo.getBeanName());
         }

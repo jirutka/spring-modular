@@ -37,7 +37,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     private static final Logger log = LoggerFactory.getLogger(StrictContextParentBean.class);
 
     private String name;
-    private List<String> runOnlyServices = new ArrayList<String>();
+    private List<String> runOnlyServices = new ArrayList<>();
     private LocationsGraph locationsGraph;
 
     private boolean prohibitCycles = true;
@@ -55,7 +55,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     }
 
     public void setRunOnlyServices(String[] runOnlyServices) {
-        List<String> runOnly = new ArrayList<String>();
+        List<String> runOnly = new ArrayList<>();
         for (String service : runOnlyServices) {
             runOnly.add(service + EXPORT_REF_SUFFIX);
         }
@@ -70,9 +70,9 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     @Override
     protected List<String> analyzeDependencies(List<String> configLocations) throws Exception {
         ContextAnalyzer analyzer = new ContextAnalyzer();
-        List<Exception> exceptions = new LinkedList<Exception>();
+        List<Exception> exceptions = new LinkedList<>();
 
-        List<String> limitedLocations = new ArrayList<String>();
+        List<String> limitedLocations = new ArrayList<>();
         for (String loc : configLocations) {
             BeanDefinitionRegistry beanFactory = getBeanFactory(loc);
 

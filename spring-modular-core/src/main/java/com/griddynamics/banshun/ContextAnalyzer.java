@@ -31,8 +31,8 @@ public class ContextAnalyzer {
 
     private static final Logger log = LoggerFactory.getLogger(ContextAnalyzer.class);
 
-    private Map<String, BeanReferenceInfo> exports = new HashMap<String, BeanReferenceInfo>();
-    private Map<String, List<BeanReferenceInfo>> imports = new HashMap<String, List<BeanReferenceInfo>>();
+    private Map<String, BeanReferenceInfo> exports = new HashMap<>();
+    private Map<String, List<BeanReferenceInfo>> imports = new HashMap<>();
 
 
     public Map<String, List<BeanReferenceInfo>> getImports() {
@@ -160,7 +160,7 @@ public class ContextAnalyzer {
         if (imports.containsKey(importBeanName)) {
             imports.get(importBeanName).add(importRefInfo);
         } else {
-            List<BeanReferenceInfo> refInfoList = new ArrayList<BeanReferenceInfo>();
+            List<BeanReferenceInfo> refInfoList = new ArrayList<>();
             refInfoList.add(importRefInfo);
             imports.put(importBeanName, refInfoList);
         }
