@@ -102,7 +102,7 @@ class ContextParentBeanTest extends Specification {
         setup:
             def registry = new ContextParentBean(applicationContext: rootContext)
             def childBeanFactory = Mock(BeanFactory)
-            def exportRef = new ExportRef(target: 'bean1', interfaceClass: RootFace, beanFactory: childBeanFactory)
+            def exportRef = new ExportRef('bean1', RootFace, childBeanFactory)
             ExportTargetSource targetSource = null
         when:
             registry.export(exportRef)

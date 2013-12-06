@@ -107,16 +107,10 @@ public class ContextAnalyzer {
 
 
     protected BeanReferenceInfo parseLookupOrExportRefArg(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
-        BeanReferenceInfo shortBeanDefinition = new BeanReferenceInfo();
-
         String importedBeanName = getTargetBeanName(beanDefinition);
         Class<?> beanInterface = getTargetBeanInterface(beanDefinition);
 
-        shortBeanDefinition.setBeanName(importedBeanName);
-        shortBeanDefinition.setBeanInterface(beanInterface);
-        shortBeanDefinition.setLocation(location);
-
-        return shortBeanDefinition;
+        return new BeanReferenceInfo(importedBeanName, beanInterface, location);
     }
 
     protected String getTargetBeanName(BeanDefinition beanDefinition) {
