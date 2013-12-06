@@ -32,11 +32,11 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.ObjectUtils;
 import org.w3c.dom.Element;
 
-import static com.griddynamics.banshun.config.xml.ParserUtils.*;
 import static com.griddynamics.banshun.ContextParentBean.EXPORT_REF_SUFFIX;
+import static com.griddynamics.banshun.config.xml.ParserUtils.*;
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
-
 
 public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
@@ -55,29 +55,15 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
 
     @Override
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
         BeanDefinitionRegistry registry = parserContext.getRegistry();
 
+        String rootName = defaultIfBlank(element.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
         String exportInterface = element.getAttribute(INTERFACE_ATTR);
-        if (isBlank(exportInterface)) {
-            return;
-        }
-
         String exportBeanRef = element.getAttribute(REF_ATTR);
-        if (isBlank(exportBeanRef)) {
-            return;
-        }
-
-        String rootName = element.getAttribute(ROOT_ATTR);
-        if (isBlank(rootName)) {
-            rootName = DEFAULT_ROOT_FACTORY_NAME;
-        }
-
-        String exportName = element.getAttribute(NAME_ATTR);
-        if (isBlank(exportName)) {
-            exportName = exportBeanRef;
-        }
-
+        String exportName = defaultIfBlank(element.getAttribute(NAME_ATTR), exportBeanRef);
         String exportRefName = exportName + EXPORT_REF_SUFFIX;
+
         if (registry.containsBeanDefinition(exportRefName)) {
             throw new BeanCreationException("Registry already contains bean with name: " + exportRefName);
         }
@@ -105,5 +91,4 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
 
         registry.registerBeanDefinition(exportRefName, voidBeanDef);
     }
-
 }

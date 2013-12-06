@@ -2,6 +2,8 @@
  * Copyright 2012 Grid Dynamics Consulting Services, Inc.
  *      http://www.griddynamics.com
  *
+ * Copyright 2013 Jakub Jirutka <jakub@jirutka.cz>.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,39 +26,28 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
 import static com.griddynamics.banshun.config.xml.ParserUtils.*;
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON;
-
 
 public class ImportBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
     @Override
     protected String getBeanClassName(Element element) {
-        return element.getAttribute(ParserUtils.INTERFACE_ATTR);
+        return element.getAttribute(INTERFACE_ATTR);
     }
 
     @Override
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-        String exportInterface = element.getAttribute(ParserUtils.INTERFACE_ATTR);
-        if (ParserUtils.isBlank(exportInterface)) {
-            return;
-        }
-
-        String externalName = element.getAttribute(ParserUtils.ID_ATTR);
-        if (ParserUtils.isBlank(externalName)) {
-            return;
-        }
-
-        String rootName = element.getAttribute(ParserUtils.ROOT_ATTR);
-        if (ParserUtils.isBlank(rootName)) {
-            rootName = ParserUtils.DEFAULT_ROOT_FACTORY_NAME;
-        }
+        String rootName = defaultIfBlank(element.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
+        String exportInterface = element.getAttribute(INTERFACE_ATTR);
+        String externalName = element.getAttribute(ID_ATTR);
 
         ConstructorArgumentValues constructorArgValues = new ConstructorArgumentValues();
         constructorArgValues.addGenericArgumentValue(externalName);
-        constructorArgValues.addGenericArgumentValue(ParserUtils.findClass(
+        constructorArgValues.addGenericArgumentValue(findClass(
                 exportInterface,
-                element.getAttribute(ParserUtils.ID_ATTR),
+                element.getAttribute(ID_ATTR),
                 parserContext.getReaderContext().getResource().getDescription()
         ));
 

@@ -18,7 +18,6 @@ package com.griddynamics.banshun.config.xml;
 
 import org.springframework.beans.factory.CannotLoadBeanClassException;
 
-
 public final class ParserUtils {
 
     public static final String DEFAULT_ROOT_FACTORY_NAME = "root";
@@ -39,11 +38,6 @@ public final class ParserUtils {
             throw new CannotLoadBeanClassException(resourceDescription, beanName, className, ex);
         }
     }
-
-    public static boolean isBlank(String str) {
-        return str == null || str.length() == 0;
-    }
-
 
     private ParserUtils() {}
 }
