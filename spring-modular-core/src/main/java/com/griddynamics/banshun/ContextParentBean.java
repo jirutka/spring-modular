@@ -121,13 +121,13 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     }
 
 
-    public Void export(ExportRef ref) {
-        log.debug("Exporting bean '{}' with interface '{}'", ref.getTarget(), ref.getInterfaceClass().getSimpleName());
+    public Void export(ExportRef exportRef) {
+        log.debug("Exporting bean '{}' with interface '{}'", exportRef.getTarget(), exportRef.getInterfaceClass().getSimpleName());
 
-        String singletonBeanName = ref.getTarget() + TARGET_SOURCE_SUFFIX;
+        String singletonBeanName = exportRef.getTarget() + TARGET_SOURCE_SUFFIX;
 
         if (!context.containsBean(singletonBeanName)) {
-            ExportTargetSource exportTargetSource = new ExportTargetSource(ref.getTarget(), ref.getInterfaceClass(), ref.getBeanFactory());
+            ExportTargetSource exportTargetSource = new ExportTargetSource(exportRef);
 
             beanFactory.registerSingleton(singletonBeanName, exportTargetSource);
         }

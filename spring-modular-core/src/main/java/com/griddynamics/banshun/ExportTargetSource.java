@@ -2,6 +2,8 @@
  * Copyright 2012 Grid Dynamics Consulting Services, Inc.
  *      http://www.griddynamics.com
  *
+ * Copyright 2013 Jakub Jirutka <jakub@jirutka.cz>.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +18,9 @@
  */
 package com.griddynamics.banshun;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.TargetSource;
@@ -24,20 +29,25 @@ import org.springframework.beans.factory.BeanFactory;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
+
 public class ExportTargetSource implements TargetSource {
+
     private static final Logger log = LoggerFactory.getLogger(ExportTargetSource.class);
 
     private final AtomicReference<Object> target = new AtomicReference<>();
+
     private final String targetBeanName;
     private final Class<?> targetClass;
     private final BeanFactory beanFactory;
 
 
-    public ExportTargetSource(String targetBeanName, Class<?> targetClass, BeanFactory beanFactory) {
-        this.targetBeanName = targetBeanName;
-        this.targetClass = targetClass;
-        this.beanFactory = beanFactory;
+    public ExportTargetSource(ExportRef exportRef) {
+        this.targetBeanName = exportRef.getTarget();
+        this.targetClass = exportRef.getInterfaceClass();
+        this.beanFactory = exportRef.getBeanFactory();
     }
+
 
     public BeanFactory getBeanFactory() {
         return beanFactory;
@@ -62,14 +72,28 @@ public class ExportTargetSource implements TargetSource {
         Object localTarget = target.get();
 
         if (localTarget == null) {
-            if (target.compareAndSet(null, localTarget = getBeanFactory().getBean(getTargetBeanName()))) {
+            if (target.compareAndSet(null, localTarget = beanFactory.getBean(targetBeanName))) {
                 return localTarget;
             } else {
-                // log potentially redundant instance initialization
-                log.info("Needles creation of bean {} caused by concurrency has been detected. Ignoring new instance.", targetBeanName);
+                log.info("Redundant creation of bean {} caused by concurrency has been detected. Ignoring new instance.", targetBeanName);
                 return target.get();
             }
         }
         return localTarget;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return EqualsBuilder.reflectionEquals(this, obj, "target");
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this, "target");
     }
 }
