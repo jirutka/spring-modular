@@ -27,8 +27,6 @@
     <bean name="object2" class="com.griddynamics.banshun.fixtures.JustBean" lazy-init="true"/>
     <bs:export ref="object2" interface="com.griddynamics.banshun.fixtures.MiddleFace"/>
 
-    <bean name="failBean" class="com.griddynamics.banshun.fixtures.FailFaceFactory" factory-method="getObject"/>
-
     <bean name="context2" class="com.griddynamics.banshun.fixtures.JustBean" lazy-init="true"/>
     <bs:export ref="context2" interface="com.griddynamics.banshun.fixtures.MiddleFace"/>
 </beans>

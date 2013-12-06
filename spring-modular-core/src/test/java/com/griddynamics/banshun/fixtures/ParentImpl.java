@@ -20,6 +20,15 @@ public class ParentImpl implements Parent {
 
     private Child child;
 
+
+    public ParentImpl() {
+    }
+
+    public ParentImpl(Child child) {
+        this.child = child;
+    }
+
+
     public Child getChild() {
         return child;
     }

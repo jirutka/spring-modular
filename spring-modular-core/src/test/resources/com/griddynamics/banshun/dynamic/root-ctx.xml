@@ -24,7 +24,7 @@
     <bean name="root" class="com.griddynamics.banshun.StrictContextParentBean">
         <property name="configLocations" value="
                 /com/griddynamics/banshun/ctx1.xml,
-                /com/griddynamics/banshun/dynamic/ctx2.xml,
+                /com/griddynamics/banshun/ctx2.xml,
                 /com/griddynamics/banshun/ctx3.xml,
                 /com/griddynamics/banshun/ctx4.xml,
                 /com/griddynamics/banshun/ctx5.xml,

@@ -16,9 +16,14 @@
  */
 package com.griddynamics.banshun.fixtures;
 
-public class FailFaceFactory {
 
-    public static MiddleFace getObject() throws Exception {
+public class FailBeanFactory {
+
+    public static RootFace getRootFace() throws Exception {
+        throw new Exception("exception!");
+    }
+
+    public static Child getChild() throws Exception {
         throw new Exception("exception!");
     }
 }

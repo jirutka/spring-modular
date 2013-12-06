@@ -16,7 +16,6 @@
  */
 package com.griddynamics.banshun;
 
-import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.autoproxy.TargetSourceCreator;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -28,7 +27,7 @@ import java.util.regex.Pattern;
 public class LookupTargetSourceCreator implements TargetSourceCreator, ApplicationContextAware {
     private ApplicationContext context;
 
-    public TargetSource getTargetSource(Class<?> beanClass, String beanName) {
+    public LookupTargetSource getTargetSource(Class<?> beanClass, String beanName) {
         if (!beanName.endsWith(ContextParentBean.BEAN_DEF_SUFFIX)) {
             return null;
         }

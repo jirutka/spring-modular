@@ -56,30 +56,30 @@ public class ContextAnalyzer {
     }
 
     public boolean areThereImportsWithoutExports() {
-        boolean allImportsHaveExports = false;
+        boolean hasInvalidImports = false;
         
         for (String importedBeanName : imports.keySet()) {
             if (!exports.containsKey(importedBeanName)) {
-                allImportsHaveExports = true;
+                hasInvalidImports = true;
                 String location = imports.get(importedBeanName).get(0).getLocation();
                 log.error("Import without export was found. Bean: {} location: {}", importedBeanName, location);
             }
         }
         
-        return allImportsHaveExports;
+        return hasInvalidImports;
     }
 
     public boolean areThereExportsWithoutImport() {
-        boolean allExportshaveImports = true;
+        boolean hasUnusedExports = false;
 
         for (String exportedBeanName : exports.keySet()) {
             if (!imports.containsKey(exportedBeanName)) {
-                allExportshaveImports = false;
+                hasUnusedExports = true;
                 log.warn("Bean {} was exported but never imported", exportedBeanName);
             }
         }
 
-        return allExportshaveImports;
+        return hasUnusedExports;
     }
 
     public boolean areImportsTypesCorrect() {

@@ -227,7 +227,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return result;
     }
 
-    private void initializeChildContexts() {
+    void initializeChildContexts() {
         for (String loc : resultConfigLocations) {
             if (ignoredLocations.contains(loc)) {
                 continue;
@@ -240,7 +240,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
                         ConfigurableApplicationContext child = createChildContext(res, context);
                         children.add(child);
                     } catch (Exception e) {
-                        log.error("Failed to process resource [{}] from location [{}] ", new Object[]{res.getURL(), loc, e});
+                        log.error("Failed to process resource [{}] from location [{}] ", new Object[]{res.getURI(), loc, e});
                         if (strictErrorHandling) {
                             throw new RuntimeException(e);
                         }
@@ -259,7 +259,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
     }
 
-    private ConfigurableApplicationContext createChildContext(Resource res, ApplicationContext parent) throws Exception {
+    ConfigurableApplicationContext createChildContext(Resource res, ApplicationContext parent) throws Exception {
         if (childContextPrototype != null && childContextPrototype.length() > 0) {
             try {
                 return (ConfigurableApplicationContext) parent.getBean(childContextPrototype, res, parent);

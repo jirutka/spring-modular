@@ -20,7 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.TargetSource;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.*;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,6 +39,7 @@ public class LookupTargetSource implements TargetSource {
     private String actualBeanName;
     private final Class<?> targetClass;
 
+
     public LookupTargetSource(ApplicationContext context, String targetBeanName, Class<?> targetClass) {
         this.context = context;
         this.targetBeanName = targetBeanName;
@@ -47,6 +50,14 @@ public class LookupTargetSource implements TargetSource {
         matcher.matches();
         this.actualBeanName = matcher.group(1);
     }
+
+    public LookupTargetSource(String actualBeanName, String targetBeanName, Class<?> targetClass, ApplicationContext context) {
+        this.actualBeanName = actualBeanName;
+        this.targetBeanName = targetBeanName;
+        this.targetClass = targetClass;
+        this.context = context;
+    }
+
 
     public String getTargetBeanName() {
         return this.targetBeanName;
@@ -68,8 +79,8 @@ public class LookupTargetSource implements TargetSource {
 
         if (localTarget == null) {
             if (context.containsBean(getTargetBeanName())) {
-                ExportTargetSource ets = (ExportTargetSource) context.getBean(getTargetBeanName(), TargetSource.class);
-                checkForCorrectAssignment(ets.getTargetClass(), actualBeanName, ets.getBeanFactory().getType(actualBeanName));
+                ExportTargetSource ets = context.getBean(getTargetBeanName(), ExportTargetSource.class);
+                checkForCorrectAssignment(ets.getTargetClass(), actualBeanName, ets.getBeanFactory().getType(ets.getTargetBeanName()));
 
                 if (target.compareAndSet(null, localTarget = ets.getTarget())) {
                     return localTarget;

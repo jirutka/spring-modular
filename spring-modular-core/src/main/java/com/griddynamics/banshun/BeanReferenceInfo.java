@@ -22,6 +22,17 @@ public class BeanReferenceInfo {
     private Class<?> beanInterface;
     private String location;
 
+
+    public BeanReferenceInfo() {
+    }
+
+    public BeanReferenceInfo(String beanName, Class<?> beanInterface, String location) {
+        this.beanName = beanName;
+        this.beanInterface = beanInterface;
+        this.location = location;
+    }
+
+
     public void setBeanName(String beanName) {
         this.beanName = beanName;
     }
