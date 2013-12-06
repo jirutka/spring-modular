@@ -18,8 +18,10 @@ package com.griddynamics.banshun
 import com.griddynamics.banshun.fixtures.JustBean
 import com.griddynamics.banshun.fixtures.RootFace
 import com.griddynamics.banshun.test.TestUtils
+import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
+import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.ContextStoppedEvent
@@ -28,6 +30,7 @@ import org.springframework.core.io.ClassPathResource
 import spock.lang.Specification
 
 import static com.griddynamics.banshun.test.TestUtils.BASE_PKG
+import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE
 
 class ContextParentBeanTest extends Specification {
 
@@ -128,17 +131,26 @@ class ContextParentBeanTest extends Specification {
     def 'lookup bean for the first time'() {
         setup:
             def registry = new ContextParentBean(applicationContext: rootContext)
-            def expected = new JustBean()
+            def expectedTargetSource = new LookupTargetSource('bean1', 'bean1_targetSource', JustBean, rootContext)
+            def expectedResult = new JustBean()
+            def RootBeanDefinition registeredBeanDef
         when:
-            def actual = registry.lookup('bean1', JustBean)
+            def result = registry.lookup('bean1', JustBean)
         then:
             1 * rootContext.containsBean('bean1_beanDef') >> false
-            1 * beanFactory.registerBeanDefinition('bean1_beanDef', { beanDef ->
-                assert beanDef.beanClassName == JustBean.name; true
-            })
-            1 * rootContext.getBean('bean1_beanDef', JustBean) >> expected
+        then:
+            1 * beanFactory.registerBeanDefinition('bean1_beanDef', { registeredBeanDef = it })
         and:
-            actual == expected
+            registeredBeanDef.beanClass == ProxyFactoryBean
+            registeredBeanDef.role == ROLE_INFRASTRUCTURE
+            registeredBeanDef.propertyValues.size() == 1
+
+            def targetSource = registeredBeanDef.propertyValues.getPropertyValue('targetSource').value
+            targetSource == expectedTargetSource
+        then:
+            1 * rootContext.getBean('bean1_beanDef', JustBean) >> expectedResult
+        and:
+            result == expectedResult
     }
 
     def 'lookup already registered bean'() {

@@ -2,6 +2,8 @@
  * Copyright 2012 Grid Dynamics Consulting Services, Inc.
  *      http://www.griddynamics.com
  *
+ * Copyright 2013 Jakub Jirutka <jakub@jirutka.cz>.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,13 +20,13 @@ package com.griddynamics.banshun;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.*;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -34,6 +36,8 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.util.*;
+
+import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
 
 public class ContextParentBean implements InitializingBean, ApplicationContextAware, Registry, DisposableBean,
         ApplicationListener<ApplicationEvent>, ExceptionsLogger {
@@ -137,9 +141,13 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         String beanDefinitionName = name + BEAN_DEF_SUFFIX;
 
         if (!context.containsBean(beanDefinitionName)) {
-            BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(clazz).getBeanDefinition();
+            RootBeanDefinition proxyBeanDef = new RootBeanDefinition(ProxyFactoryBean.class);
 
-            ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(beanDefinitionName, beanDefinition);
+            proxyBeanDef.setRole(ROLE_INFRASTRUCTURE);
+            proxyBeanDef.getPropertyValues().add("targetSource",
+                    new LookupTargetSource(name, name + TARGET_SOURCE_SUFFIX, clazz, context));
+
+            ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(beanDefinitionName, proxyBeanDef);
         }
 
         return context.getBean(beanDefinitionName, clazz);

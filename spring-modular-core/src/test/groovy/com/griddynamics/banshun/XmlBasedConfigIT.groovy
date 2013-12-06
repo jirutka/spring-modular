@@ -139,12 +139,6 @@ class XmlBasedConfigIT extends Specification {
             <bean id="root" class="${parentBeanClass.name}">
                   ${propertyElements}
             </bean>
-
-            <bean id="proxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-                <property name="customTargetSourceCreators">
-                    <bean class="com.griddynamics.banshun.LookupTargetSourceCreator"/>
-                </property>
-            </bean>
             """
         new InMemoryXmlApplicationContext(xml)
     }

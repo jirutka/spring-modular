@@ -2,6 +2,8 @@
  * Copyright 2012 Grid Dynamics Consulting Services, Inc.
  *      http://www.griddynamics.com
  *
+ * Copyright 2013 Jakub Jirutka <jakub@jirutka.cz>.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +18,9 @@
  */
 package com.griddynamics.banshun;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.TargetSource;
@@ -26,11 +31,12 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 public class LookupTargetSource implements TargetSource {
-    private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
+
+    private static final Logger log = LoggerFactory.getLogger(LookupTargetSource.class);
 
     private AtomicReference<Object> target = new AtomicReference<>();
     private final ApplicationContext context;
@@ -39,17 +45,6 @@ public class LookupTargetSource implements TargetSource {
     private String actualBeanName;
     private final Class<?> targetClass;
 
-
-    public LookupTargetSource(ApplicationContext context, String targetBeanName, Class<?> targetClass) {
-        this.context = context;
-        this.targetBeanName = targetBeanName;
-        this.targetClass = targetClass;
-
-        final Pattern pattern = Pattern.compile("(.*)" + ContextParentBean.TARGET_SOURCE_SUFFIX);
-        Matcher matcher = pattern.matcher(targetBeanName);
-        matcher.matches();
-        this.actualBeanName = matcher.group(1);
-    }
 
     public LookupTargetSource(String actualBeanName, String targetBeanName, Class<?> targetClass, ApplicationContext context) {
         this.actualBeanName = actualBeanName;
@@ -106,5 +101,20 @@ public class LookupTargetSource implements TargetSource {
             throw new BeanCreationException(actualBeanName,
                     new BeanNotOfRequiredTypeException(actualBeanName, actualBeanClass, exportClass));
         }
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return EqualsBuilder.reflectionEquals(this, obj, "target");
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this, "target");
     }
 }
