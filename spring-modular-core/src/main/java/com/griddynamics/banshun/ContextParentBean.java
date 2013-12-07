@@ -39,8 +39,8 @@ import java.util.*;
 
 import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
 
-public class ContextParentBean implements InitializingBean, ApplicationContextAware, Registry, DisposableBean,
-        ApplicationListener<ApplicationEvent>, ExceptionsLogger {
+public class ContextParentBean implements Registry,
+        InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener<ApplicationEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
     private Map<String, Exception> nestedContextsExceptions = new LinkedHashMap<>();
