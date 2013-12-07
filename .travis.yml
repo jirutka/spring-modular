@@ -2,5 +2,3 @@ language: java
 jdk:
   - openjdk7
   - oraclejdk7
-after_success:
-  - 'mvn -pl spring-modular-core,spring-modular-web jacoco:report coveralls:jacoco'
