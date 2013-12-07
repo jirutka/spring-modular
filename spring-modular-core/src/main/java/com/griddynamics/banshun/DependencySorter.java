@@ -115,12 +115,12 @@ public class DependencySorter {
                 Map<String, StringBuilder> exportingLocations = new HashMap<>();
 
                 for (BeanReferenceInfo bean : locationsMap.get(locationName).getImportBeans()) {
-                    String exportingLocation = exports.get(bean.getBeanName()).getLocation();
+                    String exportingLocation = exports.get(bean.getServiceName()).getLocation();
 
                     if (!exportingLocations.containsKey(exportingLocation)) {
                         exportingLocations.put(exportingLocation, new StringBuilder());
                     }
-                    exportingLocations.get(exportingLocation).append(bean.getBeanName()).append("\\n");
+                    exportingLocations.get(exportingLocation).append(bean.getServiceName()).append("\\n");
                 }
                 for (String exportingLocationName : exportingLocations.keySet()) {
                     String beans = exportingLocations.get(exportingLocationName).toString();
@@ -150,7 +150,7 @@ public class DependencySorter {
             for (BeanReferenceInfo bean : beans) {
                 Location location = locations.get(bean.getLocation());
                 location.getImportBeans().add(bean);
-                allImportBeans.add(bean.getBeanName());
+                allImportBeans.add(bean.getServiceName());
             }
         }
         return allImportBeans;
@@ -198,7 +198,7 @@ public class DependencySorter {
         while (!list.isEmpty() && (location = removeLocation(list, hasNoDependencies)) != null) {
             for (BeanReferenceInfo imp : location.getImportBeans()) {
                 if (thereIsNoImport(list, imp)) {
-                    annihilatedExports.add(imp.getBeanName());
+                    annihilatedExports.add(imp.getServiceName());
                 }
             }
             tail.add(0, location);
@@ -249,7 +249,7 @@ public class DependencySorter {
     private boolean thereIsNoImport(LinkedList<Location> list, BeanReferenceInfo importedBean) {
         for (Location location : list) {
             for (BeanReferenceInfo bean : location.getImportBeans()) {
-                if (bean.getBeanName().equals(importedBean.getBeanName())) {
+                if (bean.getServiceName().equals(importedBean.getServiceName())) {
                     return false;
                 }
             }
@@ -272,7 +272,7 @@ public class DependencySorter {
     Collection<String> collectBeanNames(Collection<BeanReferenceInfo> beanInfoCollection) {
         Set<String> set = new LinkedHashSet<>();
         for (BeanReferenceInfo beanReferenceInfo : beanInfoCollection) {
-            set.add(beanReferenceInfo.getBeanName());
+            set.add(beanReferenceInfo.getServiceName());
         }
         return set;
     }

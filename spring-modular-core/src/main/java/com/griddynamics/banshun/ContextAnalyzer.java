@@ -2,6 +2,8 @@
  * Copyright 2012 Grid Dynamics Consulting Services, Inc.
  *      http://www.griddynamics.com
  *
+ * Copyright 2013 Jakub Jirutka <jakub@jirutka.cz>.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -58,11 +60,11 @@ public class ContextAnalyzer {
     public boolean areThereImportsWithoutExports() {
         boolean hasInvalidImports = false;
         
-        for (String importedBeanName : imports.keySet()) {
-            if (!exports.containsKey(importedBeanName)) {
+        for (String serviceName : imports.keySet()) {
+            if (!exports.containsKey(serviceName)) {
                 hasInvalidImports = true;
-                String location = imports.get(importedBeanName).get(0).getLocation();
-                log.error("Import without export was found. Bean: {} location: {}", importedBeanName, location);
+                String location = imports.get(serviceName).get(0).getLocation();
+                log.error("Unsatisfied import found in {}: there is no service with name '{}'", location, serviceName);
             }
         }
         
@@ -72,10 +74,10 @@ public class ContextAnalyzer {
     public boolean areThereExportsWithoutImport() {
         boolean hasUnusedExports = false;
 
-        for (String exportedBeanName : exports.keySet()) {
-            if (!imports.containsKey(exportedBeanName)) {
+        for (String serviceName : exports.keySet()) {
+            if (!imports.containsKey(serviceName)) {
                 hasUnusedExports = true;
-                log.warn("Bean {} was exported but never imported", exportedBeanName);
+                log.warn("Unused service detected: '{}' is exported but never imported", serviceName);
             }
         }
 
@@ -85,18 +87,18 @@ public class ContextAnalyzer {
     public boolean areImportsTypesCorrect() {
         boolean importsTypesAreCorrect = true;
         
-        for (String exportedBeanName : exports.keySet()) {
-            if (imports.containsKey(exportedBeanName)) {
-                Class<?> exportedBeanInterface = exports.get(exportedBeanName).getBeanInterface();
+        for (String exportName : exports.keySet()) {
+            if (imports.containsKey(exportName)) {
+                Class<?> exportIface = exports.get(exportName).getServiceInterface();
 
-                for (BeanReferenceInfo refInfo : imports.get(exportedBeanName)) {
-                    Class<?> importedBeanInterface = refInfo.getBeanInterface();
+                for (BeanReferenceInfo importRef : imports.get(exportName)) {
+                    Class<?> importIface = importRef.getServiceInterface();
                     
-                    if (!importedBeanInterface.isAssignableFrom(exportedBeanInterface)) {
+                    if (!importIface.isAssignableFrom(exportIface)) {
                        importsTypesAreCorrect = false;
                        log.error("Imported bean {} from location {} must implement same interface that appropriate" +
                                  "exported bean {} or subinterface but no superclass or superinterface",
-                               new Object[]{exportedBeanName, refInfo.getLocation(), exportedBeanName});
+                               new Object[]{exportName, importRef.getLocation(), exportName});
                     }
                 }
             }
@@ -107,28 +109,28 @@ public class ContextAnalyzer {
 
 
     protected BeanReferenceInfo parseLookupOrExportRefArg(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
-        String importedBeanName = getTargetBeanName(beanDefinition);
-        Class<?> beanInterface = getTargetBeanInterface(beanDefinition);
+        String serviceName = extractServiceName(beanDefinition);
+        Class<?> serviceIface = extractServiceInterface(beanDefinition);
 
-        return new BeanReferenceInfo(importedBeanName, beanInterface, location);
+        return new BeanReferenceInfo(serviceName, serviceIface, location);
     }
 
-    protected String getTargetBeanName(BeanDefinition beanDefinition) {
-        String importedBeanName = null;
+    protected String extractServiceName(BeanDefinition beanDefinition) {
+        String serviceName = null;
 
         ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
                 .getConstructorArgumentValues().getIndexedArgumentValue(0, null);
         Object beanNameValueHolder = valueHolder.getValue();
 
         if (beanNameValueHolder instanceof RuntimeBeanNameReference) {
-            importedBeanName = ((RuntimeBeanNameReference)valueHolder.getValue()).getBeanName();
+            serviceName = ((RuntimeBeanNameReference)valueHolder.getValue()).getBeanName();
         } else if (beanNameValueHolder instanceof TypedStringValue) {
-            importedBeanName = ((TypedStringValue)valueHolder.getValue()).getValue();
+            serviceName = ((TypedStringValue)valueHolder.getValue()).getValue();
         } else if (beanNameValueHolder instanceof String) {
-            importedBeanName = (String)beanNameValueHolder;
+            serviceName = (String)beanNameValueHolder;
         }
 
-        return importedBeanName;
+        return serviceName;
     }
 
     protected BeanReferenceInfo getExportReference(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
@@ -149,45 +151,45 @@ public class ContextAnalyzer {
 
     //TODO should be private or protected
     public void putInImports(BeanReferenceInfo importRefInfo) {
-        String importBeanName = importRefInfo.getBeanName();
+        String serviceName = importRefInfo.getServiceName();
 
-        if (imports.containsKey(importBeanName)) {
-            imports.get(importBeanName).add(importRefInfo);
+        if (imports.containsKey(serviceName)) {
+            imports.get(serviceName).add(importRefInfo);
         } else {
             List<BeanReferenceInfo> refInfoList = new ArrayList<>();
             refInfoList.add(importRefInfo);
-            imports.put(importBeanName, refInfoList);
+            imports.put(serviceName, refInfoList);
         }
     }
 
     //TODO should be private or protected
     public void putInExports(BeanReferenceInfo exportRefInfo) {
-        String exportedBeanName = exportRefInfo.getBeanName();
+        String serviceName = exportRefInfo.getServiceName();
 
-        if (exports.containsKey(exportedBeanName)) {
+        if (exports.containsKey(serviceName)) {
             throw new BeanCreationException(String.format(
                     "Double export was defined: %s in context %s. Previous export was in context %s",
-                    exportedBeanName, exportRefInfo.getLocation(), exports.get(exportedBeanName).getLocation()));
+                    serviceName, exportRefInfo.getLocation(), exports.get(serviceName).getLocation()));
         } else {
-            exports.put(exportedBeanName, exportRefInfo);
+            exports.put(serviceName, exportRefInfo);
         }
     }
 
 
-    private Class<?> getTargetBeanInterface(BeanDefinition beanDefinition) throws ClassNotFoundException {
-        Class<?> beanInterface = null;
+    private Class<?> extractServiceInterface(BeanDefinition beanDefinition) throws ClassNotFoundException {
+        Class<?> serviceIface = null;
 
         ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
                 .getConstructorArgumentValues().getIndexedArgumentValue(1, null);
 
-        Object beanInterfaceName = valueHolder.getValue();
+        Object serviceIfaceName = valueHolder.getValue();
 
-        if (beanInterfaceName instanceof TypedStringValue) {
-            beanInterface = Class.forName(((TypedStringValue)beanInterfaceName).getValue());
-        } else if (beanInterfaceName instanceof Class) {
-            beanInterface = (Class<?>)beanInterfaceName;
+        if (serviceIfaceName instanceof TypedStringValue) {
+            serviceIface = Class.forName(((TypedStringValue)serviceIfaceName).getValue());
+        } else if (serviceIfaceName instanceof Class) {
+            serviceIface = (Class<?>) serviceIfaceName;
         }
 
-        return beanInterface;
+        return serviceIface;
     }
 }

@@ -23,7 +23,7 @@ import lombok.Data;
 @Data
 public class BeanReferenceInfo {
 
-    private final String beanName;
-    private final Class<?> beanInterface;
+    private final String serviceName;
+    private final Class<?> serviceInterface;
     private final String location;
 }

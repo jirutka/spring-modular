@@ -113,7 +113,7 @@ class ContextParentBeanTest extends Specification {
             1 * rootContext.containsBean('export1_targetSource') >> false
             1 * beanFactory.registerSingleton('export1_targetSource', { targetSource = it })
         and:
-            targetSource.targetBeanName == 'bean1'
+            targetSource.beanName == 'bean1'
             targetSource.targetClass == RootFace
             targetSource.beanFactory == childBeanFactory
     }

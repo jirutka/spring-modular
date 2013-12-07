@@ -40,13 +40,13 @@ public class ImportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
         String rootName = defaultIfBlank(element.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
-        String exportInterface = element.getAttribute(INTERFACE_ATTR);
-        String externalName = element.getAttribute(ID_ATTR);
+        String serviceInterface = element.getAttribute(INTERFACE_ATTR);
+        String serviceName = element.getAttribute(ID_ATTR);
 
         ConstructorArgumentValues constructorArgValues = new ConstructorArgumentValues();
-        constructorArgValues.addIndexedArgumentValue(0, externalName);
+        constructorArgValues.addIndexedArgumentValue(0, serviceName);
         constructorArgValues.addIndexedArgumentValue(1, findClass(
-                exportInterface,
+                serviceInterface,
                 element.getAttribute(ID_ATTR),
                 parserContext.getReaderContext().getResource().getDescription()
         ));

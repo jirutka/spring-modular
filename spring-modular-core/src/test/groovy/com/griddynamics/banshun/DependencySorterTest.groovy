@@ -158,11 +158,11 @@ class DependencySorterTest extends Specification {
         }
 
         Map<String, BeanReferenceInfo> getExports() {
-            modules*.exportBeans.flatten().collectEntries{ [it.beanName, it] }
+            modules*.exportBeans.flatten().collectEntries{ [it.serviceName, it] }
         }
 
         Map<String, List<BeanReferenceInfo>> getImports() {
-            modules*.importBeans.flatten().groupBy{ it.beanName }
+            modules*.importBeans.flatten().groupBy{ it.serviceName }
         }
 
         class ModuleBuilder {
@@ -170,13 +170,13 @@ class DependencySorterTest extends Specification {
             private imports = new HashSet()
             private exports = new HashSet()
 
-            def addExport(String beanName, Class<?> beanIface) {
-                exports.add(new BeanReferenceInfo(beanName, beanIface, locationName))
+            def addExport(String serviceName, Class<?> serviceIface) {
+                exports.add(new BeanReferenceInfo(serviceName, serviceIface, locationName))
                 return this
             }
 
-            def addImport(String beanName, Class<?> beanIface) {
-                imports.add(new BeanReferenceInfo(beanName, beanIface, locationName))
+            def addImport(String serviceName, Class<?> serviceIface) {
+                imports.add(new BeanReferenceInfo(serviceName, serviceIface, locationName))
                 return this
             }
 

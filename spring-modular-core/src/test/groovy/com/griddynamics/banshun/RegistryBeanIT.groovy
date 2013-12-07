@@ -56,7 +56,7 @@ class RegistryBeanIT extends Specification {
 
         then: 'context should contain ExportTargetSource for exported bean'
             ctx.getBean('just-bean' + TARGET_SOURCE_SUFFIX, ExportTargetSource)
-                    .targetBeanName == 'just-bean'
+                    .beanName == 'just-bean'
 
         and: 'early-import proxy can be invoked now'
             earlyImport.toString()

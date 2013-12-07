@@ -37,14 +37,14 @@ public class ExportTargetSource implements TargetSource {
 
     private final AtomicReference<Object> target = new AtomicReference<>();
 
-    private final String targetBeanName;
-    private final Class<?> targetClass;
+    private final String beanName;
+    private final Class<?> serviceInterface;
     private final BeanFactory beanFactory;
 
 
     public ExportTargetSource(ExportRef exportRef) {
-        this.targetBeanName = exportRef.getLocalBeanName();
-        this.targetClass = exportRef.getInterfaceClass();
+        this.beanName = exportRef.getBeanName();
+        this.serviceInterface = exportRef.getServiceInterface();
         this.beanFactory = exportRef.getBeanFactory();
     }
 
@@ -53,12 +53,12 @@ public class ExportTargetSource implements TargetSource {
         return beanFactory;
     }
 
-    public String getTargetBeanName() {
-        return targetBeanName;
+    public String getBeanName() {
+        return beanName;
     }
 
     public Class<?> getTargetClass() {
-        return targetClass;
+        return serviceInterface;
     }
 
     public boolean isStatic() {
@@ -72,10 +72,10 @@ public class ExportTargetSource implements TargetSource {
         Object localTarget = target.get();
 
         if (localTarget == null) {
-            if (target.compareAndSet(null, localTarget = beanFactory.getBean(targetBeanName))) {
+            if (target.compareAndSet(null, localTarget = beanFactory.getBean(beanName))) {
                 return localTarget;
             } else {
-                log.info("Redundant creation of bean {} caused by concurrency has been detected. Ignoring new instance.", targetBeanName);
+                log.info("Redundant creation of bean {} caused by concurrency has been detected. Ignoring new instance.", beanName);
                 return target.get();
             }
         }

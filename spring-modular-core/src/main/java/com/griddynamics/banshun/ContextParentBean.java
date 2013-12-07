@@ -122,9 +122,10 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
 
     public Void export(ExportRef exportRef) {
-        log.debug("Exporting bean '{}' with interface '{}'", exportRef.getTarget(), exportRef.getInterfaceClass().getSimpleName());
+        log.debug("Exporting bean '{}' with interface '{}' and name '{}'",
+                exportRef.getBeanName(), exportRef.getServiceInterface().getSimpleName(), exportRef.getServiceName());
 
-        String singletonBeanName = exportRef.getTarget() + TARGET_SOURCE_SUFFIX;
+        String singletonBeanName = exportRef.getServiceName() + TARGET_SOURCE_SUFFIX;
 
         if (!context.containsBean(singletonBeanName)) {
             ExportTargetSource exportTargetSource = new ExportTargetSource(exportRef);
@@ -135,22 +136,22 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return null;
     }
 
-    public <T> T lookup(String name, Class<T> clazz) {
-        log.debug("Looking up bean '{}' with interface '{}'", name, clazz.getSimpleName());
+    public <T> T lookup(String serviceName, Class<T> serviceInterface) {
+        log.debug("Looking up service '{}' with interface '{}'", serviceName, serviceInterface.getSimpleName());
 
-        String beanDefinitionName = name + BEAN_DEF_SUFFIX;
+        String importProxyName = serviceName + BEAN_DEF_SUFFIX;
 
-        if (!context.containsBean(beanDefinitionName)) {
+        if (!context.containsBean(importProxyName)) {
             RootBeanDefinition proxyBeanDef = new RootBeanDefinition(ProxyFactoryBean.class);
 
             proxyBeanDef.setRole(ROLE_INFRASTRUCTURE);
             proxyBeanDef.getPropertyValues().add("targetSource",
-                    new LookupTargetSource(name, name + TARGET_SOURCE_SUFFIX, clazz, context));
+                    new LookupTargetSource(serviceName, serviceName + TARGET_SOURCE_SUFFIX, serviceInterface, context));
 
-            ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(beanDefinitionName, proxyBeanDef);
+            ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(importProxyName, proxyBeanDef);
         }
 
-        return context.getBean(beanDefinitionName, clazz);
+        return context.getBean(importProxyName, serviceInterface);
     }
 
     /** side effect only version of lookup(), addresses #8 in a little bit hakish way.

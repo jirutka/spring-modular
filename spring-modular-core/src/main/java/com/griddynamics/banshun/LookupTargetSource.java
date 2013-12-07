@@ -39,27 +39,27 @@ public class LookupTargetSource implements TargetSource {
     private static final Logger log = LoggerFactory.getLogger(LookupTargetSource.class);
 
     private AtomicReference<Object> target = new AtomicReference<>();
-    private final ApplicationContext context;
+    private final ApplicationContext rootContext;
 
-    private final String targetBeanName;
-    private String actualBeanName;
-    private final Class<?> targetClass;
+    private final String exportProxyName;
+    private String serviceName;
+    private final Class<?> serviceInterface;
 
 
-    public LookupTargetSource(String actualBeanName, String targetBeanName, Class<?> targetClass, ApplicationContext context) {
-        this.actualBeanName = actualBeanName;
-        this.targetBeanName = targetBeanName;
-        this.targetClass = targetClass;
-        this.context = context;
+    public LookupTargetSource(String serviceName, String exportProxyName, Class<?> serviceInterface, ApplicationContext rootContext) {
+        this.serviceName = serviceName;
+        this.exportProxyName = exportProxyName;
+        this.serviceInterface = serviceInterface;
+        this.rootContext = rootContext;
     }
 
 
-    public String getTargetBeanName() {
-        return this.targetBeanName;
+    public String getExportProxyName() {
+        return exportProxyName;
     }
 
     public Class<?> getTargetClass() {
-        return this.targetClass;
+        return serviceInterface;
     }
 
     public boolean isStatic() {
@@ -73,33 +73,33 @@ public class LookupTargetSource implements TargetSource {
         Object localTarget = target.get();
 
         if (localTarget == null) {
-            if (context.containsBean(getTargetBeanName())) {
-                ExportTargetSource ets = context.getBean(getTargetBeanName(), ExportTargetSource.class);
-                checkForCorrectAssignment(ets.getTargetClass(), actualBeanName, ets.getBeanFactory().getType(ets.getTargetBeanName()));
+            if (rootContext.containsBean(getExportProxyName())) {
+                ExportTargetSource ets = rootContext.getBean(getExportProxyName(), ExportTargetSource.class);
+                checkForCorrectAssignment(ets.getTargetClass(), serviceName, ets.getBeanFactory().getType(ets.getBeanName()));
 
                 if (target.compareAndSet(null, localTarget = ets.getTarget())) {
                     return localTarget;
                 } else {
                     // log potentially redundant instance initialization
-                    log.warn("Bean {} was created earlier", actualBeanName);
+                    log.warn("Bean {} was created earlier", serviceName);
                     return target.get();
                 }
             } else {
-                throw new NoSuchBeanDefinitionException(actualBeanName, String.format(
-                        "can't find export declaration for lookup(%s, %s)", actualBeanName, getTargetClass()));
+                throw new NoSuchBeanDefinitionException(serviceName, String.format(
+                        "can't find export declaration for lookup(%s, %s)", serviceName, getTargetClass()));
             }
         }
         return localTarget;
     }
 
-    private void checkForCorrectAssignment(Class<?> exportClass, String actualBeanName, Class<?> actualBeanClass) {
-        if (!getTargetClass().isAssignableFrom(exportClass)) {
-            throw new BeanNotOfRequiredTypeException(actualBeanName, getTargetClass(), exportClass);
+    private void checkForCorrectAssignment(Class<?> serviceInterface, String beanName, Class<?> beanClass) {
+        if (!getTargetClass().isAssignableFrom(serviceInterface)) {
+            throw new BeanNotOfRequiredTypeException(beanName, getTargetClass(), serviceInterface);
         }
 
-        if (!exportClass.isAssignableFrom(actualBeanClass)) {
-            throw new BeanCreationException(actualBeanName,
-                    new BeanNotOfRequiredTypeException(actualBeanName, actualBeanClass, exportClass));
+        if (!serviceInterface.isAssignableFrom(beanClass)) {
+            throw new BeanCreationException(beanName,
+                    new BeanNotOfRequiredTypeException(beanName, beanClass, serviceInterface));
         }
     }
 

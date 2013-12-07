@@ -30,21 +30,21 @@ import static lombok.AccessLevel.PACKAGE;
 public class ExportRef implements BeanFactoryAware {
 
     /**
-     * External name of the exported bean by which other contexts can import it.
+     * External name of the exported bean (aka service) by that other contexts can import it.
      */
-    private final String target;
+    private final String serviceName;
 
     /**
-     * Interface of the exported bean. The {@link ContextParentBean#lookup(String, Class) lookup()}
+     * Interface of the exported bean (aka service). The {@link ContextParentBean#lookup(String, Class) lookup()}
      * calls should specify the same.
      */
-    private final Class<?> interfaceClass;
+    private final Class<?> serviceInterface;
 
     /**
      * Name of the actual bean being exported from the injected bean factory. This is used in
-     * {@link ExportTargetSource} to find the bean. It may or may not be the same as export name!
+     * {@link ExportTargetSource} to find the bean. It may or may not be the same as service name!
      */
-    private final String localBeanName;
+    private final String beanName;
 
     /**
      * Bean factory of the child context from which the bean will be exported.
@@ -53,12 +53,12 @@ public class ExportRef implements BeanFactoryAware {
     private BeanFactory beanFactory;
 
     /**
-     * This constructor is called by Spring when instantiating Bean Definition
+     * This constructor is called by Spring when instantiating the Bean Definition
      * declared in {@link com.griddynamics.banshun.config.xml.ExportBeanDefinitionParser}.
      */
-    ExportRef(String target, Class<?> interfaceClass, String localBeanName) {
-        this.target = target;
-        this.interfaceClass = interfaceClass;
-        this.localBeanName = localBeanName;
+    ExportRef(String serviceName, Class<?> serviceInterface, String beanName) {
+        this.serviceName = serviceName;
+        this.serviceInterface = serviceInterface;
+        this.beanName = beanName;
     }
 }

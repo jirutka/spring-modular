@@ -59,23 +59,23 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
         BeanDefinitionRegistry registry = parserContext.getRegistry();
 
         String rootName = defaultIfBlank(element.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
-        String exportInterface = element.getAttribute(INTERFACE_ATTR);
-        String exportBeanRef = element.getAttribute(REF_ATTR);
-        String exportName = defaultIfBlank(element.getAttribute(NAME_ATTR), exportBeanRef);
-        String exportRefName = exportName + EXPORT_REF_SUFFIX;
+        String serviceInterface = element.getAttribute(INTERFACE_ATTR);
+        String beanName = element.getAttribute(REF_ATTR);
+        String serviceName = defaultIfBlank(element.getAttribute(NAME_ATTR), beanName);
+        String exportBeanDefName = serviceName + EXPORT_REF_SUFFIX;
 
-        if (registry.containsBeanDefinition(exportRefName)) {
-            throw new BeanCreationException("Registry already contains bean with name: " + exportRefName);
+        if (registry.containsBeanDefinition(exportBeanDefName)) {
+            throw new BeanCreationException("Registry already contains bean with name: " + exportBeanDefName);
         }
 
         ConstructorArgumentValues exportBeanConstructorArgValues = new ConstructorArgumentValues();
-        exportBeanConstructorArgValues.addIndexedArgumentValue(0, exportName);
+        exportBeanConstructorArgValues.addIndexedArgumentValue(0, serviceName);
         exportBeanConstructorArgValues.addIndexedArgumentValue(1, findClass(
-                exportInterface,
-                exportBeanRef,
+                serviceInterface,
+                beanName,
                 parserContext.getReaderContext().getResource().getDescription()
         ));
-        exportBeanConstructorArgValues.addIndexedArgumentValue(2, exportBeanRef);
+        exportBeanConstructorArgValues.addIndexedArgumentValue(2, beanName);
 
         BeanDefinition exportBeanDef = new RootBeanDefinition(ExportRef.class, exportBeanConstructorArgValues, null);
 
@@ -91,6 +91,6 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
         voidBeanDef.setFactoryBeanName(rootName);
         voidBeanDef.setConstructorArgumentValues(voidBeanConstructorArgValues);
 
-        registry.registerBeanDefinition(exportRefName, voidBeanDef);
+        registry.registerBeanDefinition(exportBeanDefName, voidBeanDef);
     }
 }

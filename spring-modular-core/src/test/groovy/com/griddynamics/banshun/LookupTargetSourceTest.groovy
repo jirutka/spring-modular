@@ -26,9 +26,9 @@ class LookupTargetSourceTest extends Specification {
 
     def rootContext = Mock(ApplicationContext)
     def exportTargetSource = Mock(ExportTargetSource)
-    def actualBeanName = 'bean1'
-    def targetBeanName = 'bean1_targetSource'
-    def lookupTargetSource = new LookupTargetSource(actualBeanName, targetBeanName, RootFace, rootContext)
+    def beanName = 'bean1'
+    def exportProxyName = 'bean1_targetSource'
+    def lookupTargetSource = new LookupTargetSource(beanName, exportProxyName, RootFace, rootContext)
     def expected = new JustBean()
 
 
@@ -48,7 +48,7 @@ class LookupTargetSourceTest extends Specification {
         when:
             def actual = lookupTargetSource.getTarget()
         then:
-            1 * rootContext.getBean(targetBeanName, *_) >> exportTargetSource
+            1 * rootContext.getBean(exportProxyName, *_) >> exportTargetSource
             1 * exportTargetSource.getTarget() >> expected
         and:
             actual == expected
@@ -63,7 +63,7 @@ class LookupTargetSourceTest extends Specification {
             lookupTargetSource.getTarget()
 
         then: 'obtain target source and the bean'
-            1 * rootContext.getBean(targetBeanName, *_) >> exportTargetSource
+            1 * rootContext.getBean(exportProxyName, *_) >> exportTargetSource
             1 * exportTargetSource.getTarget() >> expected
 
         when: 'invoked again'

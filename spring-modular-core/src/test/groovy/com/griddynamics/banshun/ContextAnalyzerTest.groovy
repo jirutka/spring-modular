@@ -32,7 +32,7 @@ class ContextAnalyzerTest extends Specification {
             def refs = ['bean1', 'bean2', 'bean1'].collect { name ->
                 new BeanReferenceInfo(name, RootFace, 'ctx1')
             }
-            def refsByName = refs.groupBy { it.beanName }
+            def refsByName = refs.groupBy { it.serviceName }
         when:
             refs.each { analyzer.putInImports(it) }
         then:
@@ -44,7 +44,7 @@ class ContextAnalyzerTest extends Specification {
             def refs = ['bean1', 'bean2'].collect { name ->
                 new BeanReferenceInfo(name, RootFace, 'ctx1')
             }
-            def refsByName = refs.collectEntries { [(it.beanName): it] }
+            def refsByName = refs.collectEntries { [(it.serviceName): it] }
         when:
             refs.each { analyzer.putInExports(it) }
         then:
