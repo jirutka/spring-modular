@@ -117,7 +117,7 @@ public class ContextAnalyzer {
         String importedBeanName = null;
 
         ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
-                .getConstructorArgumentValues().getGenericArgumentValues().get(0);
+                .getConstructorArgumentValues().getIndexedArgumentValue(0, null);
         Object beanNameValueHolder = valueHolder.getValue();
 
         if (beanNameValueHolder instanceof RuntimeBeanNameReference) {
@@ -178,7 +178,7 @@ public class ContextAnalyzer {
         Class<?> beanInterface = null;
 
         ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
-                .getConstructorArgumentValues().getGenericArgumentValues().get(1);
+                .getConstructorArgumentValues().getIndexedArgumentValue(1, null);
 
         Object beanInterfaceName = valueHolder.getValue();
 

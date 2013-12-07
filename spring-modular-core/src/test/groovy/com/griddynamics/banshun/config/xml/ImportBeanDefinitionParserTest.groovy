@@ -42,8 +42,8 @@ class ImportBeanDefinitionParserTest extends Specification {
             }
             with (beanDef.constructorArgumentValues) {
                 argumentCount == 2
-                getGenericArgumentValue(String).value == 'bean1'
-                getGenericArgumentValue(Class).value == Child
+                getIndexedArgumentValue(0, String).value == 'bean1'
+                getIndexedArgumentValue(1, Class).value == Child
             }
     }
 

@@ -44,8 +44,8 @@ public class ImportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
         String externalName = element.getAttribute(ID_ATTR);
 
         ConstructorArgumentValues constructorArgValues = new ConstructorArgumentValues();
-        constructorArgValues.addGenericArgumentValue(externalName);
-        constructorArgValues.addGenericArgumentValue(findClass(
+        constructorArgValues.addIndexedArgumentValue(0, externalName);
+        constructorArgValues.addIndexedArgumentValue(1, findClass(
                 exportInterface,
                 element.getAttribute(ID_ATTR),
                 parserContext.getReaderContext().getResource().getDescription()

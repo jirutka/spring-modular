@@ -50,8 +50,8 @@ class ExportBeanDefinitionParserTest extends Specification {
 
                 def innerConstrArgValues = innerBeanDef.constructorArgumentValues
                 innerConstrArgValues.argumentCount == 2
-                innerConstrArgValues.getGenericArgumentValue(String).value == 'exportBean1'  // TODO is this correct?
-                innerConstrArgValues.getGenericArgumentValue(Class).value == String
+                innerConstrArgValues.getIndexedArgumentValue(0, String).value == 'exportBean1'  // TODO is this correct?
+                innerConstrArgValues.getIndexedArgumentValue(1, Class).value == String
             }
     }
 
@@ -76,7 +76,7 @@ class ExportBeanDefinitionParserTest extends Specification {
         expect:
             def innerBeanDef = beanDef.constructorArgumentValues.getGenericArgumentValue(ExportRef).value as BeanDefinition
 
-            innerBeanDef.constructorArgumentValues.getGenericArgumentValue(String).value == 'bean1'
+            innerBeanDef.constructorArgumentValues.getIndexedArgumentValue(0, String).value == 'bean1'
     }
 
     def 'fail when required attribute missing: #name'() {
