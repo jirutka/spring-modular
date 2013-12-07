@@ -17,6 +17,8 @@ package com.griddynamics.banshun.config.xml
 
 import com.griddynamics.banshun.ExportRef
 import org.springframework.beans.FatalBeanException
+import org.springframework.beans.factory.BeanCreationException
+import org.springframework.beans.factory.BeanDefinitionStoreException
 import org.springframework.beans.factory.config.BeanDefinition
 import spock.lang.Specification
 
@@ -66,7 +68,7 @@ class ExportBeanDefinitionParserTest extends Specification {
             beanDef.factoryBeanName == DEFAULT_ROOT_FACTORY_NAME
     }
 
-    def 'use "ref" as export name when "name" attribute missing'() {
+    def 'use "ref" as service name when "name" attribute missing'() {
         given:
             def beanFactory = inMemoryBeanDefinitionRegistry(
                     '<bs:export ref="bean1" interface="java.lang.String" />'
@@ -87,5 +89,16 @@ class ExportBeanDefinitionParserTest extends Specification {
             name        | xml
             'ref'       | '<bs:export interface="java.lang.String" />'
             'interface' | '<bs:export ref="bean1" />'
+    }
+
+    def 'fail when context already contains bean of name NAME-export-ref'() {
+        when:
+            inMemoryBeanDefinitionRegistry("""
+                    <bean id="bean1${EXPORT_REF_SUFFIX}" class="java.lang.String" />
+                    <bs:export ref="bean1" interface="java.lang.String" />
+            """)
+        then:
+            def ex = thrown(BeanDefinitionStoreException)
+            ex.rootCause instanceof BeanCreationException
     }
 }
