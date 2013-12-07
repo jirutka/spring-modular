@@ -25,8 +25,8 @@ class XmlBasedConfigIT extends Specification {
             def (ctx1, ctx2, ctx3) = root.children
 
         and: 'context 1'
-            ctx1.containsBean('exportA1')
-            def beanA1 = ctx1.getBean('exportA1')
+            ctx1.containsBean('beanA1')
+            def beanA1 = ctx1.getBean('beanA1')
 
         and: 'context 2'
             ctx2.containsBean('exportA1')

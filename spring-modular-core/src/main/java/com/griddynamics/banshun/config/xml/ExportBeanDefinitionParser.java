@@ -75,6 +75,8 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
                 exportBeanRef,
                 parserContext.getReaderContext().getResource().getDescription()
         ));
+        exportBeanConstructorArgValues.addIndexedArgumentValue(2, exportBeanRef);
+
         BeanDefinition exportBeanDef = new RootBeanDefinition(ExportRef.class, exportBeanConstructorArgValues, null);
 
         ConstructorArgumentValues voidBeanConstructorArgValues = new ConstructorArgumentValues();

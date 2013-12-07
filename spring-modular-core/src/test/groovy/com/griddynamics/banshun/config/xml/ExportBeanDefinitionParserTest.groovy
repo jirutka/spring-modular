@@ -29,9 +29,9 @@ class ExportBeanDefinitionParserTest extends Specification {
     def 'parse XML and populate bean definition'() {
         given:
             def registry = inMemoryBeanDefinitionRegistry(
-                    '<bs:export name="exportBean1" ref="bean1" interface="java.lang.String" root="myRoot" />'
+                    '<bs:export name="export1" ref="bean1" interface="java.lang.String" root="myRoot" />'
             )
-            def beanDef = registry.getBeanDefinition('exportBean1' + EXPORT_REF_SUFFIX)
+            def beanDef = registry.getBeanDefinition('export1' + EXPORT_REF_SUFFIX)
         expect:
             with (beanDef) {
                 beanClassName == Void.name
@@ -49,9 +49,10 @@ class ExportBeanDefinitionParserTest extends Specification {
                 innerBeanDef.lazyInit == false
 
                 def innerConstrArgValues = innerBeanDef.constructorArgumentValues
-                innerConstrArgValues.argumentCount == 2
-                innerConstrArgValues.getIndexedArgumentValue(0, String).value == 'exportBean1'  // TODO is this correct?
+                innerConstrArgValues.argumentCount == 3
+                innerConstrArgValues.getIndexedArgumentValue(0, String).value == 'export1'
                 innerConstrArgValues.getIndexedArgumentValue(1, Class).value == String
+                innerConstrArgValues.getIndexedArgumentValue(2, String).value == 'bean1'
             }
     }
 
@@ -65,8 +66,6 @@ class ExportBeanDefinitionParserTest extends Specification {
             beanDef.factoryBeanName == DEFAULT_ROOT_FACTORY_NAME
     }
 
-
-    //TODO weird...?
     def 'use "ref" as export name when "name" attribute missing'() {
         given:
             def beanFactory = inMemoryBeanDefinitionRegistry(

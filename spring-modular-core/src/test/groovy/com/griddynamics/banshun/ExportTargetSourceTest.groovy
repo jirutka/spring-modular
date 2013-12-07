@@ -23,7 +23,7 @@ import spock.lang.Specification
 class ExportTargetSourceTest extends Specification {
 
     def beanFactory = Mock(BeanFactory)
-    def targetSource = new ExportTargetSource(new ExportRef('bean1', RootFace, beanFactory))
+    def targetSource = new ExportTargetSource(new ExportRef('export1', RootFace, 'bean1', beanFactory))
     def expected = new JustBean()
 
 

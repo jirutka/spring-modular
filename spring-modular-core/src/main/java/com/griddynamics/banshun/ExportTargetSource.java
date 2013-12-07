@@ -43,7 +43,7 @@ public class ExportTargetSource implements TargetSource {
 
 
     public ExportTargetSource(ExportRef exportRef) {
-        this.targetBeanName = exportRef.getTarget();
+        this.targetBeanName = exportRef.getLocalBeanName();
         this.targetClass = exportRef.getInterfaceClass();
         this.beanFactory = exportRef.getBeanFactory();
     }

@@ -20,28 +20,45 @@ package com.griddynamics.banshun;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 
+import static lombok.AccessLevel.PACKAGE;
+
 @Data
-@AllArgsConstructor
-@RequiredArgsConstructor
+@AllArgsConstructor(access=PACKAGE)
 public class ExportRef implements BeanFactoryAware {
 
     /**
-     * Name of the exported service. It's used to find this export reference by key
-     * and also to find the actual service bean in injected bean factory.
-     * <idref> is useful to inject the bean name to this field.
+     * External name of the exported bean by which other contexts can import it.
      */
     private final String target;
 
     /**
-     * Constraint for this reference. The requested lookup calls should specify
-     * the same interface.
+     * Interface of the exported bean. The {@link ContextParentBean#lookup(String, Class) lookup()}
+     * calls should specify the same.
      */
     private final Class<?> interfaceClass;
 
+    /**
+     * Name of the actual bean being exported from the injected bean factory. This is used in
+     * {@link ExportTargetSource} to find the bean. It may or may not be the same as export name!
+     */
+    private final String localBeanName;
+
+    /**
+     * Bean factory of the child context from which the bean will be exported.
+     * This is automatically injected by Spring (see {@link BeanFactoryAware}).
+     */
     private BeanFactory beanFactory;
+
+    /**
+     * This constructor is called by Spring when instantiating Bean Definition
+     * declared in {@link com.griddynamics.banshun.config.xml.ExportBeanDefinitionParser}.
+     */
+    ExportRef(String target, Class<?> interfaceClass, String localBeanName) {
+        this.target = target;
+        this.interfaceClass = interfaceClass;
+        this.localBeanName = localBeanName;
+    }
 }

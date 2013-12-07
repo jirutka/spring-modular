@@ -105,13 +105,13 @@ class ContextParentBeanTest extends Specification {
         setup:
             def registry = new ContextParentBean(applicationContext: rootContext)
             def childBeanFactory = Mock(BeanFactory)
-            def exportRef = new ExportRef('bean1', RootFace, childBeanFactory)
+            def exportRef = new ExportRef('export1', RootFace, 'bean1', childBeanFactory)
             ExportTargetSource targetSource = null
         when:
             registry.export(exportRef)
         then:
-            1 * rootContext.containsBean('bean1_targetSource') >> false
-            1 * beanFactory.registerSingleton('bean1_targetSource', { targetSource = it })
+            1 * rootContext.containsBean('export1_targetSource') >> false
+            1 * beanFactory.registerSingleton('export1_targetSource', { targetSource = it })
         and:
             targetSource.targetBeanName == 'bean1'
             targetSource.targetClass == RootFace
@@ -122,7 +122,7 @@ class ContextParentBeanTest extends Specification {
         setup:
             def registry = new ContextParentBean(applicationContext: rootContext)
         when:
-            registry.export(new ExportRef('bean1', RootFace))
+            registry.export(new ExportRef('bean1', RootFace, 'export1'))
         then:
             1 * rootContext.containsBean(_) >> true
             0 * beanFactory._
@@ -131,15 +131,15 @@ class ContextParentBeanTest extends Specification {
     def 'lookup bean for the first time'() {
         setup:
             def registry = new ContextParentBean(applicationContext: rootContext)
-            def expectedTargetSource = new LookupTargetSource('bean1', 'bean1_targetSource', JustBean, rootContext)
+            def expectedTargetSource = new LookupTargetSource('export1', 'export1_targetSource', JustBean, rootContext)
             def expectedResult = new JustBean()
             def RootBeanDefinition registeredBeanDef
         when:
-            def result = registry.lookup('bean1', JustBean)
+            def result = registry.lookup('export1', JustBean)
         then:
-            1 * rootContext.containsBean('bean1_beanDef') >> false
+            1 * rootContext.containsBean('export1_beanDef') >> false
         then:
-            1 * beanFactory.registerBeanDefinition('bean1_beanDef', { registeredBeanDef = it })
+            1 * beanFactory.registerBeanDefinition('export1_beanDef', { registeredBeanDef = it })
         and:
             registeredBeanDef.beanClass == ProxyFactoryBean
             registeredBeanDef.role == ROLE_INFRASTRUCTURE
@@ -148,7 +148,7 @@ class ContextParentBeanTest extends Specification {
             def targetSource = registeredBeanDef.propertyValues.getPropertyValue('targetSource').value
             targetSource == expectedTargetSource
         then:
-            1 * rootContext.getBean('bean1_beanDef', JustBean) >> expectedResult
+            1 * rootContext.getBean('export1_beanDef', JustBean) >> expectedResult
         and:
             result == expectedResult
     }
@@ -158,11 +158,11 @@ class ContextParentBeanTest extends Specification {
             def registry = new ContextParentBean(applicationContext: rootContext)
             def expected = new JustBean()
         when:
-            def actual = registry.lookup('bean1', JustBean)
+            def actual = registry.lookup('export1', JustBean)
         then:
-            1 * rootContext.containsBean('bean1_beanDef') >> true
+            1 * rootContext.containsBean('export1_beanDef') >> true
             0 * beanFactory._
-            1 * rootContext.getBean('bean1_beanDef', JustBean) >> expected
+            1 * rootContext.getBean('export1_beanDef', JustBean) >> expected
         and:
            actual == expected
     }
