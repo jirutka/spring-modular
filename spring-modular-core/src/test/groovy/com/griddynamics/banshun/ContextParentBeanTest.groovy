@@ -131,7 +131,7 @@ class ContextParentBeanTest extends Specification {
     def 'lookup bean for the first time'() {
         setup:
             def registry = new ContextParentBean(applicationContext: rootContext)
-            def expectedTargetSource = new LookupTargetSource('export1', 'export1_targetSource', JustBean, rootContext)
+            def expectedTargetSource = new LookupTargetSource('export1', JustBean, 'export1_targetSource', rootContext)
             def expectedResult = new JustBean()
             def RootBeanDefinition registeredBeanDef
         when:

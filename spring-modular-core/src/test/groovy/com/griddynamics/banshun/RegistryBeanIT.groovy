@@ -26,6 +26,7 @@ import spock.lang.Specification
 import java.lang.reflect.Proxy
 
 import static com.griddynamics.banshun.ContextParentBean.BEAN_DEF_SUFFIX
+import static com.griddynamics.banshun.ContextParentBean.EXPORT_REF_SUFFIX
 import static com.griddynamics.banshun.ContextParentBean.TARGET_SOURCE_SUFFIX
 import static com.griddynamics.banshun.test.TestUtils.initContext
 
@@ -49,7 +50,7 @@ class RegistryBeanIT extends Specification {
 
         then: 'no such bean exception should be thrown'
             def ex = thrown(NoSuchBeanDefinitionException)
-            ex.beanName == 'just-bean'
+            ex.beanName == 'just-bean' + TARGET_SOURCE_SUFFIX
 
         when: 'export declaration is initialized'
             ctx.getBean('export-declaration')

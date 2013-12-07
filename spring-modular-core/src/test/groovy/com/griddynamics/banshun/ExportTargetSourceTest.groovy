@@ -25,16 +25,17 @@ import spock.lang.Specification
 class ExportTargetSourceTest extends Specification {
 
     def beanFactory = Mock(BeanFactory)
-    def targetSource = new ExportTargetSource(new ExportRef('service1', MiddleFace, 'bean1', beanFactory))
+    def beanName = 'bean1'
+    def targetSource = new ExportTargetSource(new ExportRef('service1', MiddleFace, beanName, beanFactory))
 
 
     def 'find target bean in context and return it'() {
         setup:
-            beanFactory.getType('bean1') >> type
+            beanFactory.getType(beanName) >> type
         when:
             def actual = targetSource.getTarget()
         then:
-            1 * beanFactory.getBean('bean1') >> expected
+            1 * beanFactory.getBean(beanName) >> expected
             actual == expected
         where:
             expected                        | type
@@ -45,14 +46,14 @@ class ExportTargetSourceTest extends Specification {
 
     def 'return cached instance when invoked again'() {
         setup:
-            beanFactory.getType('bean1') >> MiddleFace
+            beanFactory.getType(beanName) >> MiddleFace
             def expected = new JustBean()
 
         when: 'invoked for the first time'
             targetSource.getTarget()
 
         then: 'obtain bean from context'
-            1 * beanFactory.getBean('bean1') >> expected
+            1 * beanFactory.getBean(beanName) >> expected
 
         when: 'invoked again'
             def actual = targetSource.getTarget()
@@ -64,18 +65,18 @@ class ExportTargetSourceTest extends Specification {
 
     def 'throw exception when service interface is not assignable from bean type'() {
         setup:
-            beanFactory.getType('bean1') >> type
-            beanFactory.getBean('bean1') >> bean
+            beanFactory.getType(beanName) >> type
+            beanFactory.getBean(beanName) >> bean
         when:
             targetSource.getTarget()
         then:
             def ex = thrown(BeanNotOfRequiredTypeException)
-            ex.beanName == 'bean1'
+            ex.beanName == beanName
             ex.requiredType == MiddleFace
             ex.actualType == type
         where:
             bean              | type
             new RootFace(){}  | RootFace
-           'string'          | String
+           'string'           | String
     }
 }

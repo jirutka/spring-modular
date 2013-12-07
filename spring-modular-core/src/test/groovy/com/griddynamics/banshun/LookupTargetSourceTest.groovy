@@ -16,35 +16,26 @@
 package com.griddynamics.banshun
 
 import com.griddynamics.banshun.fixtures.JustBean
+import com.griddynamics.banshun.fixtures.MiddleFace
 import com.griddynamics.banshun.fixtures.RootFace
+import org.springframework.beans.factory.BeanNotOfRequiredTypeException
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.context.ApplicationContext
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class LookupTargetSourceTest extends Specification {
 
     def rootContext = Mock(ApplicationContext)
     def exportTargetSource = Mock(ExportTargetSource)
-    def beanName = 'bean1'
-    def exportProxyName = 'bean1_targetSource'
-    def lookupTargetSource = new LookupTargetSource(beanName, exportProxyName, RootFace, rootContext)
-    def expected = new JustBean()
+    def serviceName = 'service1'
+    def exportProxyName = 'service1_targetSource'
+    def lookupTargetSource = new LookupTargetSource(serviceName, MiddleFace, exportProxyName, rootContext)
 
 
-    def 'throw exception when root context does not contain target bean'() {
-        setup:
-            rootContext.containsBean(_) >> false
-        when:
-            lookupTargetSource.getTarget()
-        then:
-            thrown(NoSuchBeanDefinitionException)
-    }
-
-    @Ignore('getTarget() needs some refactoring')
     def 'find target source in context and return its target'() {
         setup:
             rootContext.containsBean(_) >> true
+            exportTargetSource.getTargetClass() >> type
         when:
             def actual = lookupTargetSource.getTarget()
         then:
@@ -52,12 +43,18 @@ class LookupTargetSourceTest extends Specification {
             1 * exportTargetSource.getTarget() >> expected
         and:
             actual == expected
+        where:
+            expected                        | type
+            new JustBean()                  | JustBean
+            new JustBean()                  | MiddleFace
+            new MiddleFace(){ String name } | MiddleFace
     }
 
-    @Ignore('getTarget() needs some refactoring')
     def 'return cached instance when invoked again'() {
         setup:
             rootContext.containsBean(_) >> true
+            exportTargetSource.getTargetClass() >> MiddleFace
+            def expected = new JustBean()
 
         when: 'invoked for the first time'
             lookupTargetSource.getTarget()
@@ -70,6 +67,32 @@ class LookupTargetSourceTest extends Specification {
             def actual = lookupTargetSource.getTarget()
 
         then: 'just return already obtained bean'
-            actual == expected
+           0 * rootContext._
+           actual == expected
+    }
+
+    def 'throw exception when root context does not contain target bean'() {
+        setup:
+            rootContext.containsBean(_) >> false
+        when:
+            lookupTargetSource.getTarget()
+        then:
+            thrown(NoSuchBeanDefinitionException)
+    }
+
+    def 'throw exception when export and import interfaces are not compatible'() {
+        setup:
+            rootContext.containsBean(_) >> true
+            rootContext.getBean(*_) >> exportTargetSource
+            exportTargetSource.getTargetClass() >> exportType
+        when:
+            lookupTargetSource.getTarget()
+        then:
+            def ex = thrown(BeanNotOfRequiredTypeException)
+            ex.beanName == serviceName
+            ex.requiredType == MiddleFace
+            ex.actualType == exportType
+        where:
+            exportType << [RootFace, String]
     }
 }

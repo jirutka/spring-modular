@@ -146,7 +146,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
             proxyBeanDef.setRole(ROLE_INFRASTRUCTURE);
             proxyBeanDef.getPropertyValues().add("targetSource",
-                    new LookupTargetSource(serviceName, serviceName + TARGET_SOURCE_SUFFIX, serviceInterface, context));
+                    new LookupTargetSource(serviceName, serviceInterface, serviceName + TARGET_SOURCE_SUFFIX, context));
 
             ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(importProxyName, proxyBeanDef);
         }

@@ -38,24 +38,20 @@ public class LookupTargetSource implements TargetSource {
     private static final Logger log = LoggerFactory.getLogger(LookupTargetSource.class);
 
     private AtomicReference<Object> target = new AtomicReference<>();
+
+    private final String serviceName;
+    private final Class<?> serviceInterface;
+    private final String exportProxyName;
     private final ApplicationContext rootContext;
 
-    private final String exportProxyName;
-    private String serviceName;
-    private final Class<?> serviceInterface;
 
-
-    public LookupTargetSource(String serviceName, String exportProxyName, Class<?> serviceInterface, ApplicationContext rootContext) {
+    public LookupTargetSource(String serviceName, Class<?> serviceInterface, String exportProxyName, ApplicationContext rootContext) {
         this.serviceName = serviceName;
-        this.exportProxyName = exportProxyName;
         this.serviceInterface = serviceInterface;
+        this.exportProxyName = exportProxyName;
         this.rootContext = rootContext;
     }
 
-
-    public String getExportProxyName() {
-        return exportProxyName;
-    }
 
     public Class<?> getTargetClass() {
         return serviceInterface;
@@ -72,29 +68,27 @@ public class LookupTargetSource implements TargetSource {
         Object localTarget = target.get();
 
         if (localTarget == null) {
-            if (rootContext.containsBean(getExportProxyName())) {
-                ExportTargetSource ets = rootContext.getBean(getExportProxyName(), ExportTargetSource.class);
-                checkForCorrectAssignment(ets.getTargetClass(), serviceName);
+            if (!rootContext.containsBean(exportProxyName)) {
+                throw new NoSuchBeanDefinitionException(exportProxyName, String.format(
+                        "can't find export declaration for lookup(%s, %s)", serviceName, serviceInterface));
+            }
+            ExportTargetSource exportProxy = rootContext.getBean(exportProxyName, ExportTargetSource.class);
 
-                if (target.compareAndSet(null, localTarget = ets.getTarget())) {
-                    return localTarget;
-                } else {
-                    // log potentially redundant instance initialization
-                    log.warn("Bean {} was created earlier", serviceName);
-                    return target.get();
-                }
+            // verify if service interfaces on both sides are compatible
+            if (!serviceInterface.isAssignableFrom(exportProxy.getTargetClass())) {
+                throw new BeanNotOfRequiredTypeException(serviceName, serviceInterface, exportProxy.getTargetClass());
+            }
+
+            if (target.compareAndSet(null, localTarget = exportProxy.getTarget())) {
+                return localTarget;
+
             } else {
-                throw new NoSuchBeanDefinitionException(serviceName, String.format(
-                        "can't find export declaration for lookup(%s, %s)", serviceName, getTargetClass()));
+                // log potentially redundant instance initialization
+                log.warn("Bean {} was created earlier", serviceName);
+                return target.get();
             }
         }
         return localTarget;
-    }
-
-    private void checkForCorrectAssignment(Class<?> serviceInterface, String beanName) {
-        if (!getTargetClass().isAssignableFrom(serviceInterface)) {
-            throw new BeanNotOfRequiredTypeException(beanName, getTargetClass(), serviceInterface);
-        }
     }
 
     @Override
