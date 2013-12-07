@@ -119,14 +119,14 @@ class RegistryBeanIT extends Specification {
             earlyImport.toString()
 
         then: 'types does not match'
-            thrown(BeanCreationException)
+            thrown(BeanNotOfRequiredTypeException)
 
         when: 'late-import proxy is obtained and invoked'
             def lateImport = ctx.getBean('late-import')
             lateImport.toString()
 
         then: 'type does not match'
-            thrown(BeanCreationException)
+            thrown(BeanNotOfRequiredTypeException)
     }
 
 

@@ -16,26 +16,38 @@
 package com.griddynamics.banshun
 
 import com.griddynamics.banshun.fixtures.JustBean
+import com.griddynamics.banshun.fixtures.MiddleFace
 import com.griddynamics.banshun.fixtures.RootFace
 import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.BeanNotOfRequiredTypeException
 import spock.lang.Specification
 
 class ExportTargetSourceTest extends Specification {
 
     def beanFactory = Mock(BeanFactory)
-    def targetSource = new ExportTargetSource(new ExportRef('export1', RootFace, 'bean1', beanFactory))
-    def expected = new JustBean()
+    def targetSource = new ExportTargetSource(new ExportRef('service1', MiddleFace, 'bean1', beanFactory))
 
 
     def 'find target bean in context and return it'() {
+        setup:
+            beanFactory.getType('bean1') >> type
         when:
             def actual = targetSource.getTarget()
         then:
             1 * beanFactory.getBean('bean1') >> expected
             actual == expected
+        where:
+            expected                        | type
+            new JustBean()                  | JustBean
+            new JustBean()                  | MiddleFace
+            new MiddleFace(){ String name } | MiddleFace
     }
 
     def 'return cached instance when invoked again'() {
+        setup:
+            beanFactory.getType('bean1') >> MiddleFace
+            def expected = new JustBean()
+
         when: 'invoked for the first time'
             targetSource.getTarget()
 
@@ -46,7 +58,24 @@ class ExportTargetSourceTest extends Specification {
             def actual = targetSource.getTarget()
 
         then: 'just return already obtained bean'
-            0 * beanFactory.getBean('bean1')
+            0 * beanFactory._
             actual == expected
+    }
+
+    def 'throw exception when service interface is not assignable from bean type'() {
+        setup:
+            beanFactory.getType('bean1') >> type
+            beanFactory.getBean('bean1') >> bean
+        when:
+            targetSource.getTarget()
+        then:
+            def ex = thrown(BeanNotOfRequiredTypeException)
+            ex.beanName == 'bean1'
+            ex.requiredType == MiddleFace
+            ex.actualType == type
+        where:
+            bean              | type
+            new RootFace(){}  | RootFace
+           'string'          | String
     }
 }

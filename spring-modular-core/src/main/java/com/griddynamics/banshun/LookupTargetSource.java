@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.TargetSource;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -75,7 +74,7 @@ public class LookupTargetSource implements TargetSource {
         if (localTarget == null) {
             if (rootContext.containsBean(getExportProxyName())) {
                 ExportTargetSource ets = rootContext.getBean(getExportProxyName(), ExportTargetSource.class);
-                checkForCorrectAssignment(ets.getTargetClass(), serviceName, ets.getBeanFactory().getType(ets.getBeanName()));
+                checkForCorrectAssignment(ets.getTargetClass(), serviceName);
 
                 if (target.compareAndSet(null, localTarget = ets.getTarget())) {
                     return localTarget;
@@ -92,14 +91,9 @@ public class LookupTargetSource implements TargetSource {
         return localTarget;
     }
 
-    private void checkForCorrectAssignment(Class<?> serviceInterface, String beanName, Class<?> beanClass) {
+    private void checkForCorrectAssignment(Class<?> serviceInterface, String beanName) {
         if (!getTargetClass().isAssignableFrom(serviceInterface)) {
             throw new BeanNotOfRequiredTypeException(beanName, getTargetClass(), serviceInterface);
-        }
-
-        if (!serviceInterface.isAssignableFrom(beanClass)) {
-            throw new BeanCreationException(beanName,
-                    new BeanNotOfRequiredTypeException(beanName, beanClass, serviceInterface));
         }
     }
 

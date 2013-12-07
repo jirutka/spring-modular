@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.aop.TargetSource;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -72,10 +73,18 @@ public class ExportTargetSource implements TargetSource {
         Object localTarget = target.get();
 
         if (localTarget == null) {
+            // verify if declared service interface is compatible with the real bean type
+            Class<?> beanClass = beanFactory.getType(beanName);
+            if (!serviceInterface.isAssignableFrom(beanClass)) {
+                throw new BeanNotOfRequiredTypeException(beanName, serviceInterface, beanClass);
+            }
+
             if (target.compareAndSet(null, localTarget = beanFactory.getBean(beanName))) {
                 return localTarget;
+
             } else {
-                log.info("Redundant creation of bean {} caused by concurrency has been detected. Ignoring new instance.", beanName);
+                log.debug("Redundant initialization of ExportTargetSource for bean '{}' caused by" +
+                         "concurrency has been detected.", beanName);
                 return target.get();
             }
         }
