@@ -26,6 +26,9 @@ package com.griddynamics.banshun;
  */
 public interface Registry {
 
+    String EXPORT_METHOD_NAME = "export";
+    String LOOKUP_METHOD_NAME = "lookup";
+
     /**
      * Exports the given service reference.
      */

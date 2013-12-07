@@ -18,6 +18,7 @@
  */
 package com.griddynamics.banshun.config.xml;
 
+import com.griddynamics.banshun.Registry;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -32,30 +33,38 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SING
 public class ImportBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
     @Override
-    protected String getBeanClassName(Element element) {
-        return element.getAttribute(INTERFACE_ATTR);
+    protected String getBeanClassName(Element el) {
+        return el.getAttribute(INTERFACE_ATTR);
     }
 
     @Override
-    protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+    protected void doParse(Element el, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-        String rootName = defaultIfBlank(element.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
-        String serviceInterface = element.getAttribute(INTERFACE_ATTR);
-        String serviceName = element.getAttribute(ID_ATTR);
+        String rootName = defaultIfBlank(el.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
+        String serviceIfaceName = el.getAttribute(INTERFACE_ATTR);
+        String serviceName = el.getAttribute(ID_ATTR);
 
-        ConstructorArgumentValues constructorArgValues = new ConstructorArgumentValues();
-        constructorArgValues.addIndexedArgumentValue(0, serviceName);
-        constructorArgValues.addIndexedArgumentValue(1, findClass(
-                serviceInterface,
-                element.getAttribute(ID_ATTR),
-                parserContext.getReaderContext().getResource().getDescription()
-        ));
+        Class<?> serviceIface = ParserUtils.findClassByName(serviceIfaceName, el.getAttribute(ID_ATTR), parserContext);
 
         AbstractBeanDefinition beanDef = builder.getRawBeanDefinition();
         beanDef.setFactoryBeanName(rootName);
-        beanDef.setFactoryMethodName("lookup");
-        beanDef.setConstructorArgumentValues(constructorArgValues);
+        beanDef.setFactoryMethodName(Registry.LOOKUP_METHOD_NAME);
+        beanDef.setConstructorArgumentValues(
+                defineLookupMethodArgs(serviceName, serviceIface));
         beanDef.setLazyInit(true);
         beanDef.setScope(SCOPE_SINGLETON);
+    }
+
+    /**
+     * Creates arguments definition for the {@link Registry#lookup(String, Class) lookup()} method
+     * of the registry bean.
+     */
+    private ConstructorArgumentValues defineLookupMethodArgs(String serviceName, Class<?> serviceIface) {
+
+        ConstructorArgumentValues holder = new ConstructorArgumentValues();
+        holder.addIndexedArgumentValue(0, serviceName);
+        holder.addIndexedArgumentValue(1, serviceIface);
+
+        return holder;
     }
 }

@@ -19,6 +19,7 @@
 package com.griddynamics.banshun.config.xml;
 
 import com.griddynamics.banshun.ExportRef;
+import com.griddynamics.banshun.Registry;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -41,56 +42,97 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.ro
 public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
     @Override
-    protected String getBeanClassName(Element element) {
+    protected String getBeanClassName(Element el) {
         return Void.class.getCanonicalName();
     }
 
     @Override
-    protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext) {
-        return element.getAttribute(REF_ATTR)
+    protected String resolveId(Element el, AbstractBeanDefinition definition, ParserContext parserContext) {
+        return el.getAttribute(REF_ATTR)
                 + "$export"
                 + BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR
                 + ObjectUtils.getIdentityHexString(definition);
     }
 
     @Override
-    protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+    protected void doParse(Element el, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
         BeanDefinitionRegistry registry = parserContext.getRegistry();
 
-        String rootName = defaultIfBlank(element.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
-        String serviceInterface = element.getAttribute(INTERFACE_ATTR);
-        String beanName = element.getAttribute(REF_ATTR);
-        String serviceName = defaultIfBlank(element.getAttribute(NAME_ATTR), beanName);
+        String rootName = defaultIfBlank(el.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
+        String serviceIfaceName = el.getAttribute(INTERFACE_ATTR);
+        String beanName = el.getAttribute(REF_ATTR);
+        String serviceName = defaultIfBlank(el.getAttribute(NAME_ATTR), beanName);
         String exportBeanDefName = serviceName + EXPORT_REF_SUFFIX;
 
         if (registry.containsBeanDefinition(exportBeanDefName)) {
             throw new BeanCreationException("Registry already contains bean with name: " + exportBeanDefName);
         }
 
-        ConstructorArgumentValues exportBeanConstructorArgValues = new ConstructorArgumentValues();
-        exportBeanConstructorArgValues.addIndexedArgumentValue(0, serviceName);
-        exportBeanConstructorArgValues.addIndexedArgumentValue(1, findClass(
-                serviceInterface,
-                beanName,
-                parserContext.getReaderContext().getResource().getDescription()
-        ));
-        exportBeanConstructorArgValues.addIndexedArgumentValue(2, beanName);
+        Class<?> serviceIface = ParserUtils.findClassByName(serviceIfaceName, beanName, parserContext);
 
-        BeanDefinition exportBeanDef = new RootBeanDefinition(ExportRef.class, exportBeanConstructorArgValues, null);
+        BeanDefinition exportRefBeanDef = defineExportRef(serviceName, serviceIface, beanName);
+        BeanDefinition exportFactoryBeanDef = defineExportFactoryBean(rootName, exportRefBeanDef);
 
-        ConstructorArgumentValues voidBeanConstructorArgValues = new ConstructorArgumentValues();
-        voidBeanConstructorArgValues.addGenericArgumentValue(exportBeanDef, ExportRef.class.getName());
+        registry.registerBeanDefinition(exportBeanDefName, exportFactoryBeanDef);
+    }
 
-        AbstractBeanDefinition voidBeanDef = rootBeanDefinition(Void.class)
-                .setFactoryMethod("export")
+    /**
+     * Creates a {@link ExportRef} bean definition.
+     */
+    private BeanDefinition defineExportRef(String serviceName, Class<?> serviceIface, String beanName) {
+        return new RootBeanDefinition(
+                ExportRef.class,
+                defineExportRefConstructorArgs(serviceName, serviceIface, beanName),
+                null);
+    }
+
+    /**
+     * Creates arguments definition for a constructor of the {@link ExportRef} class.
+     */
+    private ConstructorArgumentValues defineExportRefConstructorArgs(String serviceName, Class<?> serviceIface, String beanName) {
+
+        ConstructorArgumentValues holder = new ConstructorArgumentValues();
+        holder.addIndexedArgumentValue(0, serviceName);
+        holder.addIndexedArgumentValue(1, serviceIface);
+        holder.addIndexedArgumentValue(2, beanName);
+
+        return holder;
+    }
+
+    /**
+     * Creates a factory method bean definition that just invokes
+     * {@link Registry#export(ExportRef) export()} method on the specified registry bean.
+     *
+     * @param registryName
+     * @param exportRef The definition of the {@link ExportRef} bean.
+     */
+    private BeanDefinition defineExportFactoryBean(String registryName, BeanDefinition exportRef) {
+
+        AbstractBeanDefinition beanDef = rootBeanDefinition(Void.class)
+                .setFactoryMethod(Registry.EXPORT_METHOD_NAME)
                 .setScope(SCOPE_SINGLETON)
                 .setLazyInit(false)
                 //.addDependsOn(exportBeanRef) TODO ?
                 .getRawBeanDefinition();
-        voidBeanDef.setFactoryBeanName(rootName);
-        voidBeanDef.setConstructorArgumentValues(voidBeanConstructorArgValues);
+        beanDef.setFactoryBeanName(registryName);
+        beanDef.setConstructorArgumentValues(
+                defineExportMethodArgs(exportRef));
 
-        registry.registerBeanDefinition(exportBeanDefName, voidBeanDef);
+        return beanDef;
+    }
+
+    /**
+     * Creates arguments definition for the {@link Registry#export(ExportRef) export()} method
+     * of the registry bean.
+     *
+     * @param exportRef The definition of the {@link ExportRef} bean.
+     */
+    private ConstructorArgumentValues defineExportMethodArgs(BeanDefinition exportRef) {
+
+        ConstructorArgumentValues holder = new ConstructorArgumentValues();
+        holder.addGenericArgumentValue(exportRef, ExportRef.class.getName());
+
+        return holder;
     }
 }
