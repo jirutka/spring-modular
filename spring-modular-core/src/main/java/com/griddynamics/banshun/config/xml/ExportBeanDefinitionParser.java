@@ -18,6 +18,7 @@
  */
 package com.griddynamics.banshun.config.xml;
 
+import com.griddynamics.banshun.BeanReferenceInfo;
 import com.griddynamics.banshun.ExportRef;
 import com.griddynamics.banshun.Registry;
 import org.springframework.beans.factory.BeanCreationException;
@@ -75,6 +76,9 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
 
         BeanDefinition exportRefBeanDef = defineExportRef(serviceName, serviceIface, beanName);
         BeanDefinition exportFactoryBeanDef = defineExportFactoryBean(rootName, exportRefBeanDef, resource);
+
+        exportFactoryBeanDef.setAttribute(EXPORT_BEAN_DEF_ATTR_NAME,
+                new BeanReferenceInfo(serviceName, serviceIface, extractResourcePath(resource)));
 
         registry.registerBeanDefinition(exportBeanDefName, exportFactoryBeanDef);
     }

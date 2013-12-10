@@ -15,6 +15,7 @@
  */
 package com.griddynamics.banshun.config.xml
 
+import com.griddynamics.banshun.BeanReferenceInfo
 import com.griddynamics.banshun.ExportRef
 import org.springframework.beans.FatalBeanException
 import org.springframework.beans.factory.BeanCreationException
@@ -25,6 +26,7 @@ import spock.lang.Specification
 import static com.griddynamics.banshun.ContextParentBean.EXPORT_REF_SUFFIX
 import static com.griddynamics.banshun.Registry.EXPORT_METHOD_NAME
 import static com.griddynamics.banshun.config.xml.ParserUtils.DEFAULT_ROOT_FACTORY_NAME
+import static com.griddynamics.banshun.config.xml.ParserUtils.EXPORT_BEAN_DEF_ATTR_NAME
 import static com.griddynamics.banshun.test.TestUtils.IN_MEMORY_RESOURCE_DESC
 import static com.griddynamics.banshun.test.TestUtils.inMemoryBeanDefinitionRegistry
 
@@ -36,6 +38,7 @@ class ExportBeanDefinitionParserTest extends Specification {
                     '<bs:export name="export1" ref="bean1" interface="java.lang.String" root="myRoot" />'
             )
             def beanDef = registry.getBeanDefinition('export1' + EXPORT_REF_SUFFIX)
+            def expectedRefInfo = new BeanReferenceInfo('export1', String, IN_MEMORY_RESOURCE_DESC)
         expect:
             with (beanDef) {
                 beanClassName == Void.name
@@ -44,6 +47,7 @@ class ExportBeanDefinitionParserTest extends Specification {
                 lazyInit == false
                 scope == SCOPE_SINGLETON
                 resourceDescription == IN_MEMORY_RESOURCE_DESC
+                getAttribute(EXPORT_BEAN_DEF_ATTR_NAME) == expectedRefInfo
 
                 def constrArgValues = beanDef.constructorArgumentValues
                 constrArgValues.argumentCount == 1

@@ -20,6 +20,9 @@ package com.griddynamics.banshun.config.xml;
 
 import org.springframework.beans.factory.CannotLoadBeanClassException;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.core.io.Resource;
+
+import java.io.IOException;
 
 public final class ParserUtils {
 
@@ -33,6 +36,9 @@ public final class ParserUtils {
             REF_ATTR = "ref",
             ROOT_ATTR = "root";
 
+    public static final String EXPORT_BEAN_DEF_ATTR_NAME = "com.griddynamics.banshun.EXPORT";
+    public static final String IMPORT_BEAN_DEF_ATTR_NAME = "com.griddynamics.banshun.IMPORT";
+
 
     public static Class<?> findClassByName(String className, String beanName, ParserContext parserContext) {
         String description = parserContext.getReaderContext().getResource().getDescription();
@@ -40,6 +46,14 @@ public final class ParserUtils {
             return Class.forName(className);
         } catch (ClassNotFoundException ex) {
             throw new CannotLoadBeanClassException(description, beanName, className, ex);
+        }
+    }
+
+    public static String extractResourcePath(Resource resource) {
+        try {
+            return resource.getURI().toString();
+        } catch (IOException ex) {
+            return resource.getDescription();
         }
     }
 

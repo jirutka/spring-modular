@@ -18,6 +18,7 @@
  */
 package com.griddynamics.banshun.config.xml;
 
+import com.griddynamics.banshun.BeanReferenceInfo;
 import com.griddynamics.banshun.Registry;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -57,6 +58,9 @@ public class ImportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
         beanDef.setLazyInit(true);
         beanDef.setScope(SCOPE_SINGLETON);
         beanDef.setResource(resource);
+
+        beanDef.setAttribute(IMPORT_BEAN_DEF_ATTR_NAME,
+                new BeanReferenceInfo(serviceName, serviceIface, extractResourcePath(resource)));
     }
 
     /**

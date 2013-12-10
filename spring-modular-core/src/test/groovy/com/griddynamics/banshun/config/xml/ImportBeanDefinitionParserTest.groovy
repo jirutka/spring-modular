@@ -15,6 +15,7 @@
  */
 package com.griddynamics.banshun.config.xml
 
+import com.griddynamics.banshun.BeanReferenceInfo
 import com.griddynamics.banshun.fixtures.Child
 import org.springframework.beans.FatalBeanException
 import spock.lang.Specification
@@ -22,8 +23,8 @@ import spock.lang.Unroll
 
 import static com.griddynamics.banshun.Registry.LOOKUP_METHOD_NAME
 import static com.griddynamics.banshun.config.xml.ParserUtils.DEFAULT_ROOT_FACTORY_NAME
+import static com.griddynamics.banshun.config.xml.ParserUtils.IMPORT_BEAN_DEF_ATTR_NAME
 import static com.griddynamics.banshun.test.TestUtils.IN_MEMORY_RESOURCE_DESC
-import static com.griddynamics.banshun.test.TestUtils.getIN_MEMORY_RESOURCE_DESC
 import static com.griddynamics.banshun.test.TestUtils.inMemoryBeanDefinitionRegistry
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON
 
@@ -36,6 +37,7 @@ class ImportBeanDefinitionParserTest extends Specification {
                     '<bs:import id="bean1" interface="com.griddynamics.banshun.fixtures.Child" root="myRoot" />'
             )
             def beanDef = registry.getBeanDefinition('bean1')
+            def expectedRefInfo = new BeanReferenceInfo('bean1', Child, IN_MEMORY_RESOURCE_DESC)
         expect:
             with (beanDef) {
                 factoryBeanName == 'myRoot'
@@ -43,6 +45,7 @@ class ImportBeanDefinitionParserTest extends Specification {
                 lazyInit == true
                 scope == SCOPE_SINGLETON
                 resourceDescription == IN_MEMORY_RESOURCE_DESC
+                getAttribute(IMPORT_BEAN_DEF_ATTR_NAME) == expectedRefInfo
             }
             with (beanDef.constructorArgumentValues) {
                 argumentCount == 2
