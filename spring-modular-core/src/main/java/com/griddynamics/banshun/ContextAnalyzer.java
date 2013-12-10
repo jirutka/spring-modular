@@ -21,13 +21,15 @@ package com.griddynamics.banshun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.config.*;
-import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
+import org.springframework.beans.factory.config.BeanDefinition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.griddynamics.banshun.config.xml.ParserUtils.EXPORT_BEAN_DEF_ATTR_NAME;
+import static com.griddynamics.banshun.config.xml.ParserUtils.IMPORT_BEAN_DEF_ATTR_NAME;
 
 public class ContextAnalyzer {
 
@@ -41,20 +43,16 @@ public class ContextAnalyzer {
         return imports;
     }
 
-    public void addImport(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
-        BeanReferenceInfo importReferenceInfo = parseLookupOrExportRefArg(beanDefinition, location);
-        
-        putInImports(importReferenceInfo);
+    public void addImport(BeanDefinition beanDefinition) {
+        putInImports(extractImportReference(beanDefinition));
     }
 
     public Map<String, BeanReferenceInfo> getExports() {
         return exports;
     }
 
-    public void addExport(BeanDefinition beanDefinition, String location) throws ClassNotFoundException, BeanCreationException {
-        BeanReferenceInfo exportReferenceInfo = getExportReference(beanDefinition, location);
-
-        putInExports(exportReferenceInfo);
+    public void addExport(BeanDefinition beanDefinition) throws BeanCreationException {
+        putInExports(extractExportReference(beanDefinition));
     }
 
     public boolean areThereImportsWithoutExports() {
@@ -108,45 +106,18 @@ public class ContextAnalyzer {
     }
 
 
-    protected BeanReferenceInfo parseLookupOrExportRefArg(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
-        String serviceName = extractServiceName(beanDefinition);
-        Class<?> serviceIface = extractServiceInterface(beanDefinition);
-
-        return new BeanReferenceInfo(serviceName, serviceIface, location);
+    protected BeanReferenceInfo extractImportReference(BeanDefinition beanDefinition) {
+        if (!beanDefinition.hasAttribute(IMPORT_BEAN_DEF_ATTR_NAME)) {
+            throw new IllegalArgumentException("BeanDefinition does not contain attribute: " + IMPORT_BEAN_DEF_ATTR_NAME);
+        }
+        return (BeanReferenceInfo) beanDefinition.getAttribute(IMPORT_BEAN_DEF_ATTR_NAME);
     }
 
-    protected String extractServiceName(BeanDefinition beanDefinition) {
-        String serviceName = null;
-
-        ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
-                .getConstructorArgumentValues().getIndexedArgumentValue(0, null);
-        Object beanNameValueHolder = valueHolder.getValue();
-
-        if (beanNameValueHolder instanceof RuntimeBeanNameReference) {
-            serviceName = ((RuntimeBeanNameReference)valueHolder.getValue()).getBeanName();
-        } else if (beanNameValueHolder instanceof TypedStringValue) {
-            serviceName = ((TypedStringValue)valueHolder.getValue()).getValue();
-        } else if (beanNameValueHolder instanceof String) {
-            serviceName = (String)beanNameValueHolder;
+    protected BeanReferenceInfo extractExportReference(BeanDefinition beanDefinition) {
+        if (!beanDefinition.hasAttribute(EXPORT_BEAN_DEF_ATTR_NAME)) {
+            throw new IllegalArgumentException("BeanDefinition does not contain attribute: " + EXPORT_BEAN_DEF_ATTR_NAME);
         }
-
-        return serviceName;
-    }
-
-    protected BeanReferenceInfo getExportReference(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
-
-        ConstructorArgumentValues argumentValues = beanDefinition.getConstructorArgumentValues();
-
-        ValueHolder valueHolder = argumentValues.getArgumentValue(0, BeanDefinitionHolder.class);
-        BeanDefinition exportRefBeanDefinition;
-        if (valueHolder != null) {
-            BeanDefinitionHolder holder = (BeanDefinitionHolder) valueHolder.getValue();
-            exportRefBeanDefinition = holder.getBeanDefinition();
-        } else {
-            exportRefBeanDefinition = (BeanDefinition) (argumentValues.getGenericArgumentValues().get(0)).getValue();
-        }
-
-        return parseLookupOrExportRefArg(exportRefBeanDefinition, location);
+        return (BeanReferenceInfo) beanDefinition.getAttribute(EXPORT_BEAN_DEF_ATTR_NAME);
     }
 
     //TODO should be private or protected
@@ -173,23 +144,5 @@ public class ContextAnalyzer {
         } else {
             exports.put(serviceName, exportRefInfo);
         }
-    }
-
-
-    private Class<?> extractServiceInterface(BeanDefinition beanDefinition) throws ClassNotFoundException {
-        Class<?> serviceIface = null;
-
-        ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
-                .getConstructorArgumentValues().getIndexedArgumentValue(1, null);
-
-        Object serviceIfaceName = valueHolder.getValue();
-
-        if (serviceIfaceName instanceof TypedStringValue) {
-            serviceIface = Class.forName(((TypedStringValue)serviceIfaceName).getValue());
-        } else if (serviceIfaceName instanceof Class) {
-            serviceIface = (Class<?>) serviceIfaceName;
-        }
-
-        return serviceIface;
     }
 }

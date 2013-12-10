@@ -16,6 +16,7 @@
  */
 package com.griddynamics.banshun;
 
+import com.griddynamics.banshun.config.xml.ParserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -27,7 +28,9 @@ import org.springframework.beans.factory.xml.ResourceEntityResolver;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Alexey Olenev
@@ -81,12 +84,12 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
                 BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
                 try {
                     if (isExport(beanDefinition)) {
-                        analyzer.addExport(beanDefinition, loc);
+                        analyzer.addExport(beanDefinition);
                         if (checkForRunOnly(beanName)) {
                             limitedLocations.add(loc);
                         }
                     } else if (isImport(beanDefinition)) {
-                        analyzer.addImport(beanDefinition, loc);
+                        analyzer.addImport(beanDefinition);
                     } else if (beanDefinition.getBeanClassName() != null) {
                         checkClassExist(loc, beanName, beanDefinition.getBeanClassName());
                     }
@@ -146,13 +149,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
      * @return <tt>true</tt> if the bean will be imported, <tt>false</tt> otherwise.
      */
     private boolean isImport(BeanDefinition beanDefinition) {
-        if (beanDefinition.getFactoryMethodName() != null) {
-            if (beanDefinition.getFactoryMethodName().equals("lookup")
-                && beanDefinition.getFactoryBeanName().equals(getName())) {
-                return true;
-            }
-        }
-        return false;
+        return beanDefinition.hasAttribute(ParserUtils.IMPORT_BEAN_DEF_ATTR_NAME);
     }
 
     /**
@@ -162,13 +159,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
      * @return <tt>true</tt> if the bean will be exported, <tt>false</tt> otherwise.
      */
     private boolean isExport(BeanDefinition beanDefinition) {
-        if (beanDefinition.getFactoryMethodName() != null) {
-            if (beanDefinition.getFactoryMethodName().equals("export")
-                && beanDefinition.getFactoryBeanName().equals(getName())) {
-                return true;
-            }
-        }
-        return false;
+        return beanDefinition.hasAttribute(ParserUtils.EXPORT_BEAN_DEF_ATTR_NAME);
     }
 
     private boolean checkForRunOnly(String beanName) {
