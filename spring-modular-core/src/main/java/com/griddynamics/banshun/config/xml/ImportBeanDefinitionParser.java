@@ -24,6 +24,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.core.io.Resource;
 import org.w3c.dom.Element;
 
 import static com.griddynamics.banshun.config.xml.ParserUtils.*;
@@ -40,6 +41,8 @@ public class ImportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
     @Override
     protected void doParse(Element el, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
+        Resource resource = parserContext.getReaderContext().getResource();
+
         String rootName = defaultIfBlank(el.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
         String serviceIfaceName = el.getAttribute(INTERFACE_ATTR);
         String serviceName = el.getAttribute(ID_ATTR);
@@ -53,6 +56,7 @@ public class ImportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
                 defineLookupMethodArgs(serviceName, serviceIface));
         beanDef.setLazyInit(true);
         beanDef.setScope(SCOPE_SINGLETON);
+        beanDef.setResource(resource);
     }
 
     /**

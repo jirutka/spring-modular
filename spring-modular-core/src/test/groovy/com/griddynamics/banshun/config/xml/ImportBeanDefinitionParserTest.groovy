@@ -20,7 +20,10 @@ import org.springframework.beans.FatalBeanException
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static com.griddynamics.banshun.Registry.LOOKUP_METHOD_NAME
 import static com.griddynamics.banshun.config.xml.ParserUtils.DEFAULT_ROOT_FACTORY_NAME
+import static com.griddynamics.banshun.test.TestUtils.IN_MEMORY_RESOURCE_DESC
+import static com.griddynamics.banshun.test.TestUtils.getIN_MEMORY_RESOURCE_DESC
 import static com.griddynamics.banshun.test.TestUtils.inMemoryBeanDefinitionRegistry
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SINGLETON
 
@@ -36,9 +39,10 @@ class ImportBeanDefinitionParserTest extends Specification {
         expect:
             with (beanDef) {
                 factoryBeanName == 'myRoot'
-                factoryMethodName == 'lookup'
+                factoryMethodName == LOOKUP_METHOD_NAME
                 lazyInit == true
                 scope == SCOPE_SINGLETON
+                resourceDescription == IN_MEMORY_RESOURCE_DESC
             }
             with (beanDef.constructorArgumentValues) {
                 argumentCount == 2
@@ -63,7 +67,7 @@ class ImportBeanDefinitionParserTest extends Specification {
         then:
            thrown(FatalBeanException)
         where:
-            name     | xml
+            name        | xml
             'id'        | '<bs:import id="bean1" />'
             'interface' | '<bs:import interface="java.lang.String" />'
     }

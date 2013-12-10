@@ -23,7 +23,9 @@ import org.springframework.beans.factory.config.BeanDefinition
 import spock.lang.Specification
 
 import static com.griddynamics.banshun.ContextParentBean.EXPORT_REF_SUFFIX
+import static com.griddynamics.banshun.Registry.EXPORT_METHOD_NAME
 import static com.griddynamics.banshun.config.xml.ParserUtils.DEFAULT_ROOT_FACTORY_NAME
+import static com.griddynamics.banshun.test.TestUtils.IN_MEMORY_RESOURCE_DESC
 import static com.griddynamics.banshun.test.TestUtils.inMemoryBeanDefinitionRegistry
 
 class ExportBeanDefinitionParserTest extends Specification {
@@ -38,9 +40,10 @@ class ExportBeanDefinitionParserTest extends Specification {
             with (beanDef) {
                 beanClassName == Void.name
                 factoryBeanName == 'myRoot'
-                factoryMethodName == 'export'
+                factoryMethodName == EXPORT_METHOD_NAME
                 lazyInit == false
                 scope == SCOPE_SINGLETON
+                resourceDescription == IN_MEMORY_RESOURCE_DESC
 
                 def constrArgValues = beanDef.constructorArgumentValues
                 constrArgValues.argumentCount == 1

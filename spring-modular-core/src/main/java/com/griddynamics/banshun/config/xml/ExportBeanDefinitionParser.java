@@ -30,6 +30,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.core.io.Resource;
 import org.springframework.util.ObjectUtils;
 import org.w3c.dom.Element;
 
@@ -58,6 +59,7 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
     protected void doParse(Element el, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
         BeanDefinitionRegistry registry = parserContext.getRegistry();
+        Resource resource = parserContext.getReaderContext().getResource();
 
         String rootName = defaultIfBlank(el.getAttribute(ROOT_ATTR), DEFAULT_ROOT_FACTORY_NAME);
         String serviceIfaceName = el.getAttribute(INTERFACE_ATTR);
@@ -72,7 +74,7 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
         Class<?> serviceIface = ParserUtils.findClassByName(serviceIfaceName, beanName, parserContext);
 
         BeanDefinition exportRefBeanDef = defineExportRef(serviceName, serviceIface, beanName);
-        BeanDefinition exportFactoryBeanDef = defineExportFactoryBean(rootName, exportRefBeanDef);
+        BeanDefinition exportFactoryBeanDef = defineExportFactoryBean(rootName, exportRefBeanDef, resource);
 
         registry.registerBeanDefinition(exportBeanDefName, exportFactoryBeanDef);
     }
@@ -106,8 +108,9 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
      *
      * @param registryName
      * @param exportRef The definition of the {@link ExportRef} bean.
+     * @param resource The resource that this bean definition came from.
      */
-    private BeanDefinition defineExportFactoryBean(String registryName, BeanDefinition exportRef) {
+    private BeanDefinition defineExportFactoryBean(String registryName, BeanDefinition exportRef, Resource resource) {
 
         AbstractBeanDefinition beanDef = rootBeanDefinition(Void.class)
                 .setFactoryMethod(Registry.EXPORT_METHOD_NAME)
@@ -118,6 +121,7 @@ public class ExportBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
         beanDef.setFactoryBeanName(registryName);
         beanDef.setConstructorArgumentValues(
                 defineExportMethodArgs(exportRef));
+        beanDef.setResource(resource);
 
         return beanDef;
     }

@@ -24,7 +24,9 @@ import org.springframework.core.io.ByteArrayResource
 
 final class TestUtils {
 
-    static final BASE_PKG = '/com/griddynamics/banshun'
+    public static final BASE_PKG = '/com/griddynamics/banshun'
+
+    public static final IN_MEMORY_RESOURCE_DESC = 'in-memory-resource'
 
     static final BEANS_XML_HEAD =
         """
@@ -50,7 +52,7 @@ final class TestUtils {
         def fullXml = BEANS_XML_HEAD + xml + BEANS_XML_TAIL
 
         new XmlBeanDefinitionReader(new SimpleBeanDefinitionRegistry()).with {
-            it.loadBeanDefinitions(new ByteArrayResource(fullXml.bytes)); it
+            it.loadBeanDefinitions(new ByteArrayResource(fullXml.bytes, IN_MEMORY_RESOURCE_DESC)); it
         }.beanFactory
     }
 }
