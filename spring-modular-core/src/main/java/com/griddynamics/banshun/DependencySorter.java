@@ -2,6 +2,8 @@
  * Copyright 2012 Grid Dynamics Consulting Services, Inc.
  *      http://www.griddynamics.com
  *
+ * Copyright 2013 Jakub Jirutka <jakub@jirutka.cz>.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,48 +21,21 @@ package com.griddynamics.banshun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static java.util.Collections.emptyList;
 
 public class DependencySorter {
 
     private static final Logger log = LoggerFactory.getLogger(DependencySorter.class);
     private static final Logger logGraph = LoggerFactory.getLogger("spring.nested.dependencies.graph");
-    private static Pattern locationNamePattern = Pattern.compile("[A-Za-z0-9\\.\\$_-]*\\.xml");
 
-    private List<Location> conflictContextGroup = Collections.emptyList();
+    private List<Location> conflictContextGroup = emptyList();
     private boolean prohibitCycles = true;
-    private List<Location> locations = new LinkedList<>();
 
-    interface Predicate {
-        boolean isValid(Location s);
-    }
-
-    static class Location {
-        String locationName;
-        Set<BeanReferenceInfo> importBeans;
-        Set<BeanReferenceInfo> exportBeans;
-
-        public Location(String locationName, Set<BeanReferenceInfo> importBeans, Set<BeanReferenceInfo> exportBeans) {
-            this.locationName = locationName;
-            this.importBeans = importBeans;
-            this.exportBeans = exportBeans;
-        }
-
-        public String getLocationName() {
-            return locationName;
-        }
-
-        public Set<BeanReferenceInfo> getImportBeans() {
-            return importBeans;
-        }
-
-        public Set<BeanReferenceInfo> getExportBeans() {
-            return exportBeans;
-        }
-    }
+    private final List<Location> locations;
 
 
     public DependencySorter(String[] configLocations, Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
@@ -80,16 +55,6 @@ public class DependencySorter {
         return collectLocationNames(sortLocations());
     }
 
-    public String[] collectLocationNames(List<Location> locations) {
-        String[] result = new String[locations.size()];
-
-        int i = 0;
-        for (Location location : locations) {
-            result[i++] = location.getLocationName();
-        }
-        return result;
-    }
-
 
     private List<Location> prepareLocations(String[] configLocations, Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
         List<Location> locations = new LinkedList<>();
@@ -98,7 +63,7 @@ public class DependencySorter {
         for (String locationName : configLocations) {
             Location location = new Location(locationName, new HashSet<BeanReferenceInfo>(), new HashSet<BeanReferenceInfo>());
             locations.add(location);
-            locationsMap.put(location.getLocationName(), location);
+            locationsMap.put(location.locationName, location);
         }
         Set<String> allImportedBeans = fillLocationImportVectors(locationsMap, imports);
         fillLocationExportVectors(locationsMap, exports, allImportedBeans);
@@ -114,7 +79,7 @@ public class DependencySorter {
             for (String locationName : locationsMap.keySet()) {
                 Map<String, StringBuilder> exportingLocations = new HashMap<>();
 
-                for (BeanReferenceInfo bean : locationsMap.get(locationName).getImportBeans()) {
+                for (BeanReferenceInfo bean : locationsMap.get(locationName).importBeans) {
                     String exportingLocation = exports.get(bean.getServiceName()).getLocation();
 
                     if (!exportingLocations.containsKey(exportingLocation)) {
@@ -124,8 +89,8 @@ public class DependencySorter {
                 }
                 for (String exportingLocationName : exportingLocations.keySet()) {
                     String beans = exportingLocations.get(exportingLocationName).toString();
-                    logGraph.debug("\"{}\" -> \"{}\" [label = \"{}\"];", new Object[]{getSimpleLocationName(locationName),
-                            getSimpleLocationName(exportingLocationName), beans});
+                    logGraph.debug("\"{}\" -> \"{}\" [label = \"{}\"];", new Object[]{StringUtils.getFilename(locationName),
+                            StringUtils.getFilename(exportingLocationName), beans});
                 }
             }
             logGraph.debug("}");
@@ -136,7 +101,7 @@ public class DependencySorter {
         for (String beanName : beans.keySet()) {
             if (allImportedBeans.contains(beanName)) {
                 Location location = locations.get(beans.get(beanName).getLocation());
-                location.getExportBeans().add(beans.get(beanName));
+                location.exportBeans.add(beans.get(beanName));
             }
         }
     }
@@ -149,7 +114,7 @@ public class DependencySorter {
 
             for (BeanReferenceInfo bean : beans) {
                 Location location = locations.get(bean.getLocation());
-                location.getImportBeans().add(bean);
+                location.importBeans.add(bean);
                 allImportBeans.add(bean.getServiceName());
             }
         }
@@ -157,124 +122,118 @@ public class DependencySorter {
     }
 
     private List<Location> sortLocations() {
-        LinkedList<Location> list = new LinkedList<>(locations);
-        List<Location> orderedHead = pullLocationListHead(list);
+        Deque<Location> stack = new LinkedList<>(locations);
 
-        if (list.isEmpty()) {
-            return orderedHead;
+        List<Location> sorted = pullLocationListHead(stack);
+        if (stack.isEmpty()) {
+            return sorted;
         }
 
-        List<Location> tail = pullLocationListTail(list);
-        if (!list.isEmpty()) {
-            conflictContextGroup = list;
-            if (!prohibitCycles) {
-                log.warn("Conflict in nested context dependencies was found. Please check the following list of suspect contexts: {}",
-                        getCycleOfContexts(list));
-            } else {
-                throw new BeanCreationException("Conflict in nested context dependencies was found. Check the " +
-                        "following list of suspect contexts: " + getCycleOfContexts(list));
+        List<Location> tail = pullLocationListTail(stack);
+
+        if (!stack.isEmpty()) {
+            String message = "Cyclic dependencies found in child contexts: ";
+            if (prohibitCycles) {
+                throw new BeanCreationException(message + stack);
             }
-        } else {
-            conflictContextGroup = Collections.emptyList();
+            log.warn(message + "{}", stack);
         }
-        orderedHead.addAll(list);
-        orderedHead.addAll(tail);
+        conflictContextGroup = new ArrayList<>(stack);
 
-        return orderedHead;
+        sorted.addAll(stack); //add conflict locations
+        sorted.addAll(tail);  //add rest
+
+        return sorted;
     }
 
-    private List<Location> pullLocationListTail(LinkedList<Location> list) {
-        LinkedList<Location> tail = new LinkedList<>();
+    private List<Location> pullLocationListHead(Deque<Location> locations) {
+        Set<String> resolvedBeans = new LinkedHashSet<>();
+        List<Location> resolvedLocations = new LinkedList<>();
 
-        final LinkedList<String> annihilatedExports = new LinkedList<>();
-        Predicate hasNoDependencies = new Predicate() {
-            public boolean isValid(Location s) {
-                return s.getExportBeans().isEmpty() || annihilatedExports.containsAll(collectBeanNames(s.getExportBeans()));
+        for (Iterator<Location> it = locations.iterator(); it.hasNext();) {
+            Location location = it.next();
+
+            if (resolvedBeans.containsAll(location.getImportBeanNames())) {
+                resolvedBeans.addAll(location.getExportBeanNames());
+                resolvedLocations.add(location);
+
+                it.remove(); //remove location from unresolved
+                it = locations.iterator(); //reset iterator
             }
-        };
+        }
+        return resolvedLocations;
+    }
 
-        Collections.reverse(list);
-        Location location;
-        while (!list.isEmpty() && (location = removeLocation(list, hasNoDependencies)) != null) {
-            for (BeanReferenceInfo imp : location.getImportBeans()) {
-                if (thereIsNoImport(list, imp)) {
-                    annihilatedExports.add(imp.getServiceName());
+    private List<Location> pullLocationListTail(Deque<Location> locations) {
+        LinkedList<Location> resolvedLocations = new LinkedList<>();
+        List<String> annihilatedExports = new LinkedList<>();
+
+        for (Iterator<Location> it = locations.descendingIterator(); it.hasNext();) {
+            Location location = it.next();
+
+            if (annihilatedExports.containsAll(location.getExportBeanNames())) {
+                it.remove(); //remove location from unresolved
+                resolvedLocations.addFirst(location);
+
+                for (BeanReferenceInfo imp : location.importBeans) {
+                    if (isSomewhereImported(locations, imp)) {
+                        annihilatedExports.add(imp.getServiceName());
+                    }
                 }
-            }
-            tail.add(0, location);
-        }
-        Collections.reverse(list);
-
-        return tail;
-    }
-
-    private List<Location> pullLocationListHead(LinkedList<Location> list) {
-        final Set<String> definedBeans = new LinkedHashSet<>();
-        Predicate canBeFired = new Predicate() {
-            public boolean isValid(Location location) {
-                return definedBeans.containsAll(collectBeanNames(location.getImportBeans()));
-            }
-        };
-        Location location;
-        LinkedList<Location> orderedHead = new LinkedList<>();
-
-        while (!list.isEmpty() && (location = removeLocation(list, canBeFired)) != null) {
-            definedBeans.addAll(collectBeanNames(location.getExportBeans()));
-            orderedHead.add(location);
-        }
-        return orderedHead;
-    }
-
-    private String getCycleOfContexts(LinkedList<Location> list) {
-        StringBuilder sb = new StringBuilder();
-
-        for (Iterator<Location> listIterator = list.iterator(); listIterator.hasNext();) {
-            Location context = listIterator.next();
-            sb.append(getSimpleLocationName(context.getLocationName()));
-            if (listIterator.hasNext()) {
-                sb.append(", ");
+                it = locations.descendingIterator(); //reset iterator
             }
         }
-        return sb.toString();
+        return resolvedLocations;
     }
 
-    private String getSimpleLocationName(String contextName) {
-        Matcher matcher = locationNamePattern.matcher(contextName);
-        if (matcher.find()) {
-            return matcher.group();
-        }
-        return contextName;
-    }
-
-    private boolean thereIsNoImport(LinkedList<Location> list, BeanReferenceInfo importedBean) {
-        for (Location location : list) {
-            for (BeanReferenceInfo bean : location.getImportBeans()) {
-                if (bean.getServiceName().equals(importedBean.getServiceName())) {
-                    return false;
-                }
+    private boolean isSomewhereImported(Collection<Location> locations, BeanReferenceInfo importedBean) {
+        for (Location location : locations) {
+            if (location.getImportBeanNames().contains(importedBean.getServiceName())) {
+                return false;
             }
         }
         return true;
     }
 
+    private String[] collectLocationNames(List<Location> locations) {
+        List<String> result = new ArrayList<>(locations.size());
 
-    Location removeLocation(Collection<Location> list, Predicate p) {
-        for (Iterator<Location> iterator = list.iterator(); iterator.hasNext();) {
-            Location location = iterator.next();
-            if (p.isValid(location)) {
-                iterator.remove();
-                return location;
+        for (Location location : locations) {
+            result.add(location.locationName);
+        }
+        return result.toArray(new String[result.size()]);
+    }
+
+
+    static class Location {
+        final String locationName;
+        final Set<BeanReferenceInfo> importBeans;
+        final Set<BeanReferenceInfo> exportBeans;
+
+        Location(String locationName, Set<BeanReferenceInfo> importBeans, Set<BeanReferenceInfo> exportBeans) {
+            this.locationName = locationName;
+            this.importBeans = importBeans;
+            this.exportBeans = exportBeans;
+        }
+
+        Set<String> getImportBeanNames() {
+            return collectBeanNames(importBeans);
+        }
+
+        Set<String> getExportBeanNames() {
+            return collectBeanNames(exportBeans);
+        }
+
+        private Set<String> collectBeanNames(Collection<BeanReferenceInfo> beanReferences) {
+            Set<String> result = new LinkedHashSet<>();
+            for (BeanReferenceInfo bean : beanReferences) {
+                result.add(bean.getServiceName());
             }
+            return result;
         }
-        return null;
-    }
 
-    Collection<String> collectBeanNames(Collection<BeanReferenceInfo> beanInfoCollection) {
-        Set<String> set = new LinkedHashSet<>();
-        for (BeanReferenceInfo beanReferenceInfo : beanInfoCollection) {
-            set.add(beanReferenceInfo.getServiceName());
+        public String toString() {
+            return locationName;
         }
-        return set;
     }
-
 }

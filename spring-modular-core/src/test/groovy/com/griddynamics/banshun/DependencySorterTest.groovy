@@ -101,7 +101,7 @@ class DependencySorterTest extends Specification {
     }
 
 
-    def 'contexts with conflicts'() {
+    def 'contexts with cyclic dependencies'() {
         given:
             def builder = new DependencySorterBuilder()
                 .location('module1.xml')
@@ -138,6 +138,48 @@ class DependencySorterTest extends Specification {
             sorter.conflictContextGroup == ['module3.xml', 'module4.xml']
     }
 
+    def 'contexts with more cyclic dependencies'() {
+        given:
+            def builder = new DependencySorterBuilder()
+                .location('module1')
+                    .addImport('TestBean2', Integer)
+                    .addExport('TestBean1', Integer)
+
+                .location('module6')
+                    .addImport('TestBean5', Integer)
+                    .addExport('Redundant6', String)
+
+                .location('module3')
+                    .addImport('TestBean1', Integer)
+                    .addImport('TestBean4', Object)
+                    .addExport('TestBean3', Integer)
+
+                .location('module8')
+                    .addImport('TestBean1', Integer)
+
+                .location('module2')
+                    .addImport('TestBean1', Integer)
+                    .addExport('TestBean2', Integer)
+
+                .location('module4')
+                    .addImport('TestBean3', Object)
+                    .addExport('TestBean4', Object)
+
+                .location('module5')
+                    .addImport('TestBean4', Object)
+                    .addExport('TestBean5', Integer)
+
+                .location('module7')
+                    .addExport('Redundant7', String)
+                .build()
+            def sorter = builder.createDependencySorter()
+        when:
+            sorter.prohibitCycles = false
+            def actual = sorter.sort()
+        then:
+            actual == ['module7', 'module1', 'module3', 'module2', 'module4', 'module5', 'module6', 'module8']
+            sorter.conflictContextGroup == ['module1', 'module3', 'module2', 'module4']
+    }
 
 
     ////// Builder //////
